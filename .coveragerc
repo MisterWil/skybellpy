@@ -1,0 +1,6 @@
+[run]
+omit = 
+    skybellpy/__main__.py
+    skybellpy/helpers/*
+    tests/*
+    setup.py

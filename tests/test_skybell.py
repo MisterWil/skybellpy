@@ -3,10 +3,8 @@ Test Skybell system functionality.
 
 Tests the system initialization and attributes of the main Skybell class.
 """
-import json
 import unittest
 
-import requests
 import requests_mock
 
 import skybellpy
@@ -26,7 +24,7 @@ class TestSkybell(unittest.TestCase):
         """Set up Skybell module."""
         self.skybell_no_cred = skybellpy.Skybell()
         self.skybell = skybellpy.Skybell(username=USERNAME,
-                                   password=PASSWORD)
+                                         password=PASSWORD)
 
     def tearDown(self):
         """Clean up after test."""

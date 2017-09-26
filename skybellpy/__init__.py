@@ -189,7 +189,9 @@ class Skybell():
         if self._cookies['access_token']:
             headers['Authorization'] = 'Bearer ' + self._cookies['access_token']
 
-        headers['user-agent'] = 'SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1'
+        headers['user-agent'] = (
+            'SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) '
+            'com.skybell.doorbell/1')
         headers['content-type'] = 'application/json'
         headers['accepts'] = '*/*'
         headers['x-skybell-app-id'] = self._cookies['app_id']

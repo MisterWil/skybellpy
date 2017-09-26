@@ -10,8 +10,8 @@ https://github.com/fronzbot/blinkpy/
 
 Published under the MIT license - See LICENSE file for more details.
 
-"Skybell" is a trademark owned by SkyBell Technologies, Inc, see www.skybell.com for
-more information. I am in no way affiliated with Skybell.
+"Skybell" is a trademark owned by SkyBell Technologies, Inc, see
+www.skybell.com for more information. I am in no way affiliated with Skybell.
 """
 import os.path
 import json
@@ -23,7 +23,9 @@ import string
 import requests
 from requests.exceptions import RequestException
 
-from skybellpy.exceptions import SkybellAuthenticationException, SkybellException
+from skybellpy.device import SkybellDevice
+from skybellpy.exceptions import (
+    SkybellAuthenticationException, SkybellException)
 import skybellpy.helpers.constants as CONST
 import skybellpy.helpers.errors as ERROR
 
@@ -54,11 +56,13 @@ class Skybell():
 
     def __init__(self, username=None, password=None,
                  auto_login=False, get_devices=False,
-                 disable_cookies=False):
+                 cookies_path=CONST.COOKIES_PATH, disable_cookies=False):
         """Init Abode object."""
         self._username = username
         self._password = password
         self._session = None
+        self._cookies_path = cookies_path
+        self._disable_cookies = disable_cookies
         self._cookies = None
 
         self._devices = None
@@ -67,9 +71,9 @@ class Skybell():
         self._session = requests.session()
 
         # Load App ID, Client ID, and Token
-        if not disable_cookies and os.path.exists(CONST.COOKIES_PATH):
-            _LOGGER.debug("Cookies found at: %s", CONST.COOKIES_PATH)
-            self._cookies = _load_cookies(CONST.COOKIES_PATH)
+        if not disable_cookies and os.path.exists(cookies_path):
+            _LOGGER.debug("Cookies found at: %s", cookies_path)
+            self._cookies = _load_cookies(cookies_path)
         else:
             self._cookies = {
                 'app_id': str(uuid.uuid4()),
@@ -108,12 +112,11 @@ class Skybell():
             'token': self._cookies['token']
         }
 
-        response = self.send_request('post', CONST.LOGIN_URL,
-                                     json_data=login_data, retry=False)
-
-        if response.status_code != 200:
-            raise SkybellAuthenticationException((response.status_code,
-                                                  response.text))
+        try:
+            response = self.send_request('post', CONST.LOGIN_URL,
+                                         json_data=login_data, retry=False)
+        except Exception as exc:
+            raise SkybellAuthenticationException(ERROR.LOGIN_FAILED, exc)
 
         _LOGGER.debug("Login Response: %s", response.text)
 
@@ -121,7 +124,8 @@ class Skybell():
 
         self._cookies['access_token'] = response_object['access_token']
 
-        _save_cookies(self._cookies, CONST.COOKIES_PATH)
+        if not self._disable_cookies:
+            _save_cookies(self._cookies, self._cookies_path)
 
         _LOGGER.info("Login successful")
 
@@ -135,6 +139,10 @@ class Skybell():
             # we aren't currently doing.
             self._session = requests.session()
             self._devices = None
+            self._cookies['access_token'] = None
+
+            if not self._disable_cookies:
+                _save_cookies(self._cookies, self._cookies_path)
 
         return True
 
@@ -147,10 +155,6 @@ class Skybell():
             _LOGGER.info("Updating all devices...")
             response = self.send_request("get", CONST.DEVICES_URL)
             response_object = json.loads(response.text)
-
-            if (response_object and
-                    not isinstance(response_object, (tuple, list))):
-                response_object = [response_object]
 
             _LOGGER.debug("Get Devices Response: %s", response.text)
 
@@ -183,11 +187,15 @@ class Skybell():
     def send_request(self, method, url, headers=None,
                      json_data=None, retry=True):
         """Send requests to Skybell."""
+        if not self._cookies['access_token'] and url != CONST.LOGIN_URL:
+            self.login()
+
         if not headers:
             headers = {}
 
         if self._cookies['access_token']:
-            headers['Authorization'] = 'Bearer ' + self._cookies['access_token']
+            headers['Authorization'] = 'Bearer ' + \
+                self._cookies['access_token']
 
         headers['user-agent'] = (
             'SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) '
@@ -212,108 +220,3 @@ class Skybell():
             return self.send_request(method, url, headers, json_data, False)
 
         raise SkybellException((ERROR.REQUEST))
-
-
-class SkybellDevice(object):
-    """Class to represent each Skybell device."""
-
-    def __init__(self, json_obj, skybell):
-        """Set up Skybell device."""
-        self._json_state = json_obj
-        self._device_id = json_obj.get('id')
-        self._name = json_obj.get('name')
-        self._type = json_obj.get('type')
-        self._skybell = skybell
-
-        if not self._name:
-            self._name = self.type + ' ' + self.device_id
-
-    def get_value(self, name):
-        """Get a value from the json object.
-
-        This is the common data and is the best place to get state
-        from if it has the data you require.
-        This data is updated by the subscription service.
-        """
-        return self._json_state.get(name.lower(), {})
-
-    def refresh(self, url=CONST.DEVICE_URL):
-        """Refresh the devices json object data.
-
-        Only needed if you're not using the notification service.
-        """
-        url = url.replace('$DEVID$', self.device_id)
-
-        response = self._skybell.send_request(method="get", url=url)
-        response_object = json.loads(response.text)
-
-        _LOGGER.debug("Device Refresh Response: %s", response.text)
-
-        if response_object and not isinstance(response_object, (tuple, list)):
-            response_object = [response_object]
-
-        for device in response_object:
-            self.update(device)
-
-        return response_object
-
-    def update(self, json_state):
-        """Update the json data from a dictionary.
-
-        Only updates if it already exists in the device.
-        """
-        self._json_state.update(
-            {k: json_state[k] for k in json_state if self._json_state.get(k)})
-
-    @property
-    def status(self):
-        """Shortcut to get the generic status of a device."""
-        return self.get_value('status')
-
-    @property
-    def level(self):
-        """Shortcut to get the generic level of a device."""
-        return self.get_value('level')
-
-    @property
-    def battery_low(self):
-        """Is battery level low."""
-        return int(self.get_value('faults').get('low_battery', '0')) == 1
-
-    @property
-    def no_response(self):
-        """Is the device responding."""
-        return int(self.get_value('faults').get('no_response', '0')) == 1
-
-    @property
-    def out_of_order(self):
-        """Is the device out of order."""
-        return int(self.get_value('faults').get('out_of_order', '0')) == 1
-
-    @property
-    def tampered(self):
-        """Has the device been tampered with."""
-        # 'tempered' - Typo in API?
-        return int(self.get_value('faults').get('tempered', '0')) == 1
-
-    @property
-    def name(self):
-        """Get the name of this device."""
-        return self._name
-
-    @property
-    def type(self):
-        """Get the type of this device."""
-        return self._type
-
-    @property
-    def device_id(self):
-        """Get the device id."""
-        return self._device_id
-
-    @property
-    def desc(self):
-        """Get a short description of the device."""
-        # Garage Entry Door (ZW:00000003) - Door Lock - Closed
-        return '{0} (ID: {1}) - {2} - {3}'.format(
-            self.name, self.device_id, self.type, self.status)

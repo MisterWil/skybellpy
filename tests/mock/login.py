@@ -13,7 +13,7 @@ def post_response_ok(access_token=ACCESS_TOKEN, user_id=USERID):
         "resourceId": "resourceid123",
         "createdAt": "2016-11-26T22:30:45.254Z",
         "updatedAt": "2016-11-26T22:30:45.254Z",
-        "id": "'''+user_id+'''",
+        "id": "''' + user_id + '''",
         "userLinks": [],
-        "access_token": "'''+access_token+'''"
+        "access_token": "''' + access_token + '''"
     }'''

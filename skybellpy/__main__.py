@@ -6,8 +6,8 @@ https://github.com/MisterWil/skybellpy
 
 Published under the MIT license - See LICENSE file for more details.
 
-"Skybell" is a trademark owned by SkyBell Technologies, Inc, see www.skybell.com for
-more information. I am in no way affiliated with Skybell.
+"Skybell" is a trademark owned by SkyBell Technologies, Inc, see
+www.skybell.com for more information. I am in no way affiliated with Skybell.
 """
 import json
 import logging
@@ -138,11 +138,11 @@ def call():
                                     password=args.password,
                                     get_devices=True)
 
-        # # Set setting
-        # for setting in args.set or []:
-        #     keyval = setting.split("=")
-        #     if skybell.set_setting(keyval[0], keyval[1]):
-        #         _LOGGER.info("Setting %s changed to %s", keyval[0], keyval[1])
+    # # Set setting
+    # for setting in args.set or []:
+    #     keyval = setting.split("=")
+    #     if skybell.set_setting(keyval[0], keyval[1]):
+    #         _LOGGER.info("Setting %s changed to %s", keyval[0], keyval[1])
 
         # Output Json
         for device_id in args.json or []:

@@ -7,3 +7,10 @@ change so we can test that abodepy can still communicate.
 
 ACCESS_TOKEN = 'magicalauthtokenhere'
 USERID = '123456abc'
+
+UNAUTORIZED = '''
+    {
+      "errors": {
+        "message": "Invalid Login - SmartAuth"
+      }
+    }'''

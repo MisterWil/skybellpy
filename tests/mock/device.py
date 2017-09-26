@@ -2,13 +2,16 @@
 
 from tests.mock import USERID
 
+EMPTY_DEVICE_RESPONSE = '[]'
+
 DEVID = 'devid123abc'
+
 
 def get_response_ok(user_id=USERID, name='Front Door', dev_id=DEVID):
     """Return the successful device response json."""
     return '''
     {
-        "user": "'''+user_id+'''",
+        "user": "''' + user_id + '''",
         "uuid": "devuuid123",
         "resourceId": "devresourceid123",
         "deviceInviteToken": "devInviteToken123",
@@ -16,7 +19,7 @@ def get_response_ok(user_id=USERID, name='Front Door', dev_id=DEVID):
             "lat": "-0.0",
             "lng": "0.0"
         },
-        "name": "'''+name+'''",
+        "name": "''' + name + '''",
         "type": "skybell hd",
         "status": "up",
         "createdAt": "2016-12-03T16:48:13.651Z",
@@ -34,6 +37,6 @@ def get_response_ok(user_id=USERID, name='Front Door', dev_id=DEVID):
             "createdAt": "2017-09-25T23:32:45.312Z",
             "url": "http://www.google.com/"
         },
-        "id": "'''+dev_id+'''",
+        "id": "''' + dev_id + '''",
         "acl": "owner"
     }'''

@@ -1,0 +1,248 @@
+@app_id = appid
+@client_id = clientid
+@token = randomtoken
+###
+
+// Login to the Skybell cloud API. Returns an access token for follow-up requests
+
+POST https://cloud.myskybell.com/api/v3/login HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+
+{
+    "username": "username",
+    "password": "password",
+    "appId": "{{app_id}}",
+    "token": "{{token}}"
+}
+
+@access_token = Bearer tokenhere
+###
+
+// Register an app ?
+
+POST https://cloud.myskybell.com/api/v3/register HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+{
+    "appId": "{{app_id}}",
+    "protocol": "socketio",
+    "token": "{{token}}"
+}
+
+###
+
+// Logout (need to register an appId to logout correctly)
+
+POST https://cloud.myskybell.com/api/v3/logout
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+{"appId": "{{app_id}}"}
+
+###
+
+// Get "me" user information (first name, last name, user ID)
+
+GET https://cloud.myskybell.com/api/v3/users/me HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+
+###
+@user = userid
+
+// Get "user" info by user id (does not work)
+
+GET https://cloud.myskybell.com/api/v3/users/{{user}} HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+###
+
+// Get all device "subscriptions"?
+// Returns an array of subscriptions with the ower ID, owner info, device info, and an ID of the device
+
+GET https://cloud.myskybell.com/api/v3/subscriptions?include=owner HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+
+###
+@subscription_id = subscriptionid
+
+// Get detailed device info such as wifi info, hardware info, last checkin, etc
+
+GET https://cloud.myskybell.com/api/v3/subscriptions/{{subscription_id}}/info HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+###
+
+// Get a list of all device settings
+
+// do_not_disturb = true, false, Indoor Chime On/Off
+// chime_level = 0, 1, 2, 3 = Outdoor Chime Off, Low, Medium, High
+// motion_policy = disabled, call = Enable/Disabled
+// motion_threshold = 32, 50, 100 = Motion Senitivity, High, Medium, Low
+// video_profile = 0, 1, 2, 3 = Image Quality, 1080p, 720p (Better), 720p (Good), 480p
+
+GET https://cloud.myskybell.com/api/v3/subscriptions/{{subscription_id}}/settings HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+###
+
+// Update a setting value
+
+PATCH https://cloud.myskybell.com/api/v3/subscriptions/{{subscription_id}}/settings HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+###
+
+// Get a list of "app installs" for a specific user.
+// I believe this is a list of callback endpoints.
+// "apns" = apple push notification service
+// "endpointArn" = endpoint amazon resource name
+
+GET https://cloud.myskybell.com/api/v3/users/{{user}}/app_installs HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+###
+
+@example_app_id = appid
+
+// Get a list of all settings for callbacks
+
+GET https://cloud.myskybell.com/api/v3/users/{{user}}/app_installs/{{example_app_id}}/subscriptions/{{subscription_id}}/settings HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+###
+
+// Get a list of device activities
+
+GET https://cloud.myskybell.com/api/v3/subscriptions/{{subscription_id}}/activities/ HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+###
+
+// Get the device "avatar" aka static image with a last taken date
+
+GET https://cloud.myskybell.com/api/v3/subscriptions/{{subscription_id}}/avatar HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+###
+
+// Get the avatar image
+
+GET http://aws....
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+Accept: image/jpeg, image/png, image/gif, image/tiff
+
+###
+
+// Get a list of all devices
+
+GET https://cloud.myskybell.com/api/v3/devices HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+###
+
+// Get info for a single device
+
+@device_id = deviceid
+
+GET https://cloud.myskybell.com/api/v3/devices/{{device_id}} HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+###
+
+// Get activities for a single device
+
+GET https://cloud.myskybell.com/api/v3/devices/{{device_id}}/activities HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+###
+
+// Start and stop "on demand video" (POST and DELETE)
+
+DELETE https://cloud.myskybell.com/api/v3/devices/{{device_id}}/calls HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+###
+
+GET https://cloud.myskybell.com/api/v3/subscriptions/{{subscription_id}}/photo HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+###
+
+GET https://cloud.myskybell.com/api/v3/devices/{{device_id}}/photo HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}

@@ -15,6 +15,7 @@ import tests.mock.login as LOGIN
 import tests.mock.device as DEVICE
 import tests.mock.device_info as DEVICE_INFO
 import tests.mock.device_settings as DEVICE_SETTINGS
+import tests.mock.device_activities as DEVICE_ACTIVITIES
 
 USERNAME = 'foobar'
 PASSWORD = 'deadbeef'
@@ -52,9 +53,13 @@ class TestSkybell(unittest.TestCase):
         settings_url = str.replace(CONST.DEVICE_SETTINGS_URL,
                                    '$DEVID$', DEVICE.DEVID)
 
+        activities_url = str.replace(CONST.DEVICE_ACTIVITIES_URL,
+                                     '$DEVID$', DEVICE.DEVID)
+
         m.get(CONST.DEVICES_URL, text=device_text)
         m.get(info_url, text=info_text)
         m.get(settings_url, text=settings_text)
+        m.get(activities_url, text=DEVICE_ACTIVITIES.EMPTY_ACTIVITIES_RESPONSE)
 
         # Logout to reset everything
         self.skybell.logout()
@@ -140,10 +145,13 @@ class TestSkybell(unittest.TestCase):
             led_intensity)
         settings_url = str.replace(CONST.DEVICE_SETTINGS_URL,
                                    '$DEVID$', DEVICE.DEVID)
+        activities_url = str.replace(CONST.DEVICE_ACTIVITIES_URL,
+                                     '$DEVID$', DEVICE.DEVID)
 
         m.get(CONST.DEVICES_URL, text=device_text)
         m.get(info_url, text=info_text)
         m.get(settings_url, text=settings_text)
+        m.get(activities_url, text=DEVICE_ACTIVITIES.EMPTY_ACTIVITIES_RESPONSE)
 
         # Logout to reset everything
         self.skybell.logout()
@@ -228,10 +236,13 @@ class TestSkybell(unittest.TestCase):
         settings_text = DEVICE_SETTINGS.get_response_ok()
         settings_url = str.replace(CONST.DEVICE_SETTINGS_URL,
                                    '$DEVID$', DEVICE.DEVID)
+        activities_url = str.replace(CONST.DEVICE_ACTIVITIES_URL,
+                                     '$DEVID$', DEVICE.DEVID)
 
         m.get(CONST.DEVICES_URL, text=device_text)
         m.get(info_url, text=info_text)
         m.get(settings_url, text=settings_text)
+        m.get(activities_url, text=DEVICE_ACTIVITIES.EMPTY_ACTIVITIES_RESPONSE)
         m.patch(settings_url, text=DEVICE_SETTINGS.PATCH_RESPONSE_OK)
 
         # Logout to reset everything
@@ -285,10 +296,13 @@ class TestSkybell(unittest.TestCase):
         settings_text = DEVICE_SETTINGS.get_response_ok()
         settings_url = str.replace(CONST.DEVICE_SETTINGS_URL,
                                    '$DEVID$', DEVICE.DEVID)
+        activities_url = str.replace(CONST.DEVICE_ACTIVITIES_URL,
+                                     '$DEVID$', DEVICE.DEVID)
 
         m.get(CONST.DEVICES_URL, text=device_text)
         m.get(info_url, text=info_text)
         m.get(settings_url, text=settings_text)
+        m.get(activities_url, text=DEVICE_ACTIVITIES.EMPTY_ACTIVITIES_RESPONSE)
         m.patch(settings_url, text=DEVICE_SETTINGS.PATCH_RESPONSE_OK)
 
         # Logout to reset everything
@@ -357,10 +371,13 @@ class TestSkybell(unittest.TestCase):
             do_not_disturb=True)
         settings_url = str.replace(CONST.DEVICE_SETTINGS_URL,
                                    '$DEVID$', DEVICE.DEVID)
+        activities_url = str.replace(CONST.DEVICE_ACTIVITIES_URL,
+                                     '$DEVID$', DEVICE.DEVID)
 
         m.get(CONST.DEVICES_URL, text=device_text)
         m.get(info_url, text=info_text)
         m.get(settings_url, text=settings_text)
+        m.get(activities_url, text=DEVICE_ACTIVITIES.EMPTY_ACTIVITIES_RESPONSE)
         m.patch(settings_url, text=DEVICE_SETTINGS.PATHCH_RESPONSE_BAD_REQUEST,
                 status_code=400)
 

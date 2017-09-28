@@ -78,6 +78,15 @@ WIFI_LINK = 'wifiLink'
 WIFI_SSID = 'essid'
 CHECK_IN = 'checkedInAt'
 
+# DEVICE ACTIVITIES
+EVENT_ON_DEMAND = 'application:on-demand'
+EVENT_BUTTON = 'device:sensor:button'
+EVENT_MOTION = 'device:sensor:motion'
+
+STATE_READY = 'ready'
+
+VIDEO_STATE_READY = 'download:ready'
+
 # DEVICE SETTINGS
 SETTINGS_DO_NOT_DISTURB = 'do_not_disturb'
 SETTINGS_OUTDOOR_CHIME = 'chime_level'

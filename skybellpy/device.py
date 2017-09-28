@@ -21,6 +21,7 @@ class SkybellDevice(object):
 
         self._device_info_json = self._device_info_request()
         self._device_settings_json = self._device_settings_request()
+        self._device_activities = self._device_activities_request()
 
     def refresh(self):
         """Refresh the devices json object data."""
@@ -37,6 +38,10 @@ class SkybellDevice(object):
         self.update(new_device_json, new_device_info_json,
                     new_device_settings_json)
 
+        self._device_activities = self._device_activities_request()
+        _LOGGER.debug("Device Activities Response: %s",
+                      new_device_settings_json)
+
     def _device_request(self):
         url = str.replace(CONST.DEVICE_URL, '$DEVID$', self.device_id)
         response = self._skybell.send_request(method="get", url=url)
@@ -52,6 +57,12 @@ class SkybellDevice(object):
         response = self._skybell.send_request(method=method,
                                               url=url,
                                               json_data=json_data)
+        return json.loads(response.text)
+
+    def _device_activities_request(self):
+        url = str.replace(CONST.DEVICE_ACTIVITIES_URL,
+                          '$DEVID$', self.device_id)
+        response = self._skybell.send_request(method="get", url=url)
         return json.loads(response.text)
 
     def update(self, device_json=None, device_info_json=None,

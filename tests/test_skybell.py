@@ -17,6 +17,7 @@ import tests.mock as MOCK
 import tests.mock.login as LOGIN
 import tests.mock.device as DEVICE
 import tests.mock.device_info as DEVICE_INFO
+import tests.mock.device_settings as DEVICE_SETTINGS
 
 USERNAME = 'foobar'
 PASSWORD = 'deadbeef'
@@ -281,17 +282,27 @@ class TestSkybell(unittest.TestCase):
         dev1_devid = 'dev1'
         dev1 = DEVICE.get_response_ok(name='Dev1', dev_id=dev1_devid)
         dev1_info = DEVICE_INFO.get_response_ok(dev_id=dev1_devid)
-        dev1_info_url = CONST.DEVICE_INFO_URL.replace('$DEVID$', dev1_devid)
+        dev1_info_url = str.replace(CONST.DEVICE_INFO_URL,
+                                    '$DEVID$', dev1_devid)
+        dev1_settings = DEVICE_SETTINGS.get_response_ok()
+        dev1_settings_url = str.replace(CONST.DEVICE_SETTINGS_URL,
+                                        '$DEVID$', dev1_devid)
 
         dev2_devid = 'dev2'
         dev2 = DEVICE.get_response_ok(name='Dev2', dev_id=dev2_devid)
         dev2_info = DEVICE_INFO.get_response_ok(dev_id=dev1_devid)
-        dev2_info_url = CONST.DEVICE_INFO_URL.replace('$DEVID$', dev2_devid)
+        dev2_info_url = str.replace(CONST.DEVICE_INFO_URL,
+                                    '$DEVID$', dev2_devid)
+        dev2_settings = DEVICE_SETTINGS.get_response_ok()
+        dev2_settings_url = str.replace(CONST.DEVICE_SETTINGS_URL,
+                                        '$DEVID$', dev2_devid)
 
         m.post(CONST.LOGIN_URL, text=LOGIN.post_response_ok())
         m.get(CONST.DEVICES_URL, text='[' + dev1 + ',' + dev2 + ']')
         m.get(dev1_info_url, text=dev1_info)
         m.get(dev2_info_url, text=dev2_info)
+        m.get(dev1_settings_url, text=dev1_settings)
+        m.get(dev2_settings_url, text=dev2_settings)
 
         # Reset
         self.skybell.logout()
@@ -307,6 +318,10 @@ class TestSkybell(unittest.TestCase):
         self.assertEqual(json.loads(dev2), dev2_dev._device_json)
         self.assertEqual(json.loads(dev1_info), dev1_dev._device_info_json)
         self.assertEqual(json.loads(dev2_info), dev2_dev._device_info_json)
+        self.assertEqual(json.loads(dev1_settings),
+                         dev1_dev._device_settings_json)
+        self.assertEqual(json.loads(dev2_settings),
+                         dev2_dev._device_settings_json)
 
     @requests_mock.mock()
     def test_all_device_refresh(self, m):
@@ -314,17 +329,27 @@ class TestSkybell(unittest.TestCase):
         dev1_devid = 'dev1'
         dev1a = DEVICE.get_response_ok(name='Dev1', dev_id=dev1_devid)
         dev1a_info = DEVICE_INFO.get_response_ok(dev_id=dev1_devid)
-        dev1a_info_url = CONST.DEVICE_INFO_URL.replace('$DEVID$', dev1_devid)
+        dev1a_info_url = str.replace(CONST.DEVICE_INFO_URL,
+                                     '$DEVID$', dev1_devid)
+        dev1a_settings = DEVICE_SETTINGS.get_response_ok()
+        dev1a_settings_url = str.replace(CONST.DEVICE_SETTINGS_URL,
+                                         '$DEVID$', dev1_devid)
 
         dev2_devid = 'dev2'
         dev2a = DEVICE.get_response_ok(name='Dev2', dev_id=dev2_devid)
         dev2a_info = DEVICE_INFO.get_response_ok(dev_id=dev1_devid)
-        dev2a_info_url = CONST.DEVICE_INFO_URL.replace('$DEVID$', dev2_devid)
+        dev2a_info_url = str.replace(CONST.DEVICE_INFO_URL,
+                                     '$DEVID$', dev2_devid)
+        dev2a_settings = DEVICE_SETTINGS.get_response_ok()
+        dev2a_settings_url = str.replace(CONST.DEVICE_SETTINGS_URL,
+                                         '$DEVID$', dev2_devid)
 
         m.post(CONST.LOGIN_URL, text=LOGIN.post_response_ok())
         m.get(CONST.DEVICES_URL, text='[' + dev1a + ',' + dev2a + ']')
         m.get(dev1a_info_url, text=dev1a_info)
         m.get(dev2a_info_url, text=dev2a_info)
+        m.get(dev1a_settings_url, text=dev1a_settings)
+        m.get(dev2a_settings_url, text=dev2a_settings)
 
         # Reset
         self.skybell.logout()

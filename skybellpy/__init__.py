@@ -212,11 +212,11 @@ class Skybell():
             if response and response.status_code < 400:
                 return response
         except RequestException as exc:
-            _LOGGER.warning("Skybell requext exception: %s", exc)
+            _LOGGER.warning("Skybell request exception: %s", exc)
 
         if retry:
             self.login()
 
             return self.send_request(method, url, headers, json_data, False)
 
-        raise SkybellException((ERROR.REQUEST))
+        raise SkybellException(ERROR.REQUEST, "Retry failed")

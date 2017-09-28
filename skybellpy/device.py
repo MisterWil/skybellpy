@@ -86,6 +86,26 @@ class SkybellDevice(object):
                 {k: device_settings_json[k] for k in device_settings_json
                  if k in self._device_settings_json})
 
+    def activities(self, limit=1, event=None):
+        """Return device activity information."""
+        activities = self._device_activities
+
+        # Make sure we're working with an array
+        if not activities:
+            activities = []
+        elif not isinstance(activities, (list, tuple)):
+            activities = [activities]
+
+        # Filter our activity array
+        if event:
+            activities = list(
+                filter(
+                    lambda activity:
+                    activity[CONST.EVENT] == event, activities))
+
+        # Return the requested number
+        return activities[:limit]
+
     def _set_setting(self, settings):
         """Validate the settings and then send the PATCH request."""
         for key, value in settings.items():

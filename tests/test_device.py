@@ -392,3 +392,104 @@ class TestSkybell(unittest.TestCase):
         # Test setting to false then validate still True
         device.do_not_disturb = False
         self.assertEqual(device.do_not_disturb, True)
+
+    @requests_mock.mock()
+    def tests_activities(self, m):
+        """Check that the Skybell device activities work."""
+        m.post(CONST.LOGIN_URL, text=LOGIN.post_response_ok())
+
+        # Set up device
+        device_text = '[' + DEVICE.get_response_ok() + ']'
+        info_text = DEVICE_INFO.get_response_ok()
+        info_url = str.replace(CONST.DEVICE_INFO_URL, '$DEVID$', DEVICE.DEVID)
+
+        settings_text = DEVICE_SETTINGS.get_response_ok()
+        settings_url = str.replace(CONST.DEVICE_SETTINGS_URL,
+                                   '$DEVID$', DEVICE.DEVID)
+
+        activities_text = '[' + \
+            DEVICE_ACTIVITIES.get_response_ok(
+                dev_id=DEVICE.DEVID,
+                event=CONST.EVENT_BUTTON) + ',' + \
+            DEVICE_ACTIVITIES.get_response_ok(
+                dev_id=DEVICE.DEVID,
+                event=CONST.EVENT_MOTION) + ',' + \
+            DEVICE_ACTIVITIES.get_response_ok(
+                dev_id=DEVICE.DEVID,
+                event=CONST.EVENT_ON_DEMAND) + ']'
+        activities_json = json.loads(activities_text)
+
+        activities_url = str.replace(CONST.DEVICE_ACTIVITIES_URL,
+                                     '$DEVID$', DEVICE.DEVID)
+
+        m.get(CONST.DEVICES_URL, text=device_text)
+        m.get(info_url, text=info_text)
+        m.get(settings_url, text=settings_text)
+        m.get(activities_url, text=activities_text)
+
+        # Logout to reset everything
+        self.skybell.logout()
+
+        # Get our specific device
+        device = self.skybell.get_device(DEVICE.DEVID)
+        self.assertIsNotNone(device)
+        # pylint: disable=W0212
+        self.assertEqual(device._device_activities, activities_json)
+
+        # Get all activities from device
+        activities = device.activities(limit=100)
+        self.assertIsNotNone(activities)
+        self.assertEqual(len(activities), 3)
+
+        # Get only button activities
+        activities = device.activities(event=CONST.EVENT_BUTTON)
+        self.assertIsNotNone(activities)
+        self.assertEqual(len(activities), 1)
+        self.assertEqual(activities[0][CONST.EVENT], CONST.EVENT_BUTTON)
+
+    @requests_mock.mock()
+    def tests_bad_activities(self, m):
+        """Check that device activities recovers from bad data."""
+        m.post(CONST.LOGIN_URL, text=LOGIN.post_response_ok())
+
+        # Set up device
+        device_text = '[' + DEVICE.get_response_ok() + ']'
+        info_text = DEVICE_INFO.get_response_ok()
+        info_url = str.replace(CONST.DEVICE_INFO_URL, '$DEVID$', DEVICE.DEVID)
+
+        settings_text = DEVICE_SETTINGS.get_response_ok()
+        settings_url = str.replace(CONST.DEVICE_SETTINGS_URL,
+                                   '$DEVID$', DEVICE.DEVID)
+
+        activities_text = DEVICE_ACTIVITIES.get_response_ok(
+            dev_id=DEVICE.DEVID,
+            event=CONST.EVENT_BUTTON)
+
+        activities_url = str.replace(CONST.DEVICE_ACTIVITIES_URL,
+                                     '$DEVID$', DEVICE.DEVID)
+
+        m.get(CONST.DEVICES_URL, text=device_text)
+        m.get(info_url, text=info_text)
+        m.get(settings_url, text=settings_text)
+        m.get(activities_url, text=activities_text)
+
+        # Logout to reset everything
+        self.skybell.logout()
+
+        # Get our specific device
+        device = self.skybell.get_device(DEVICE.DEVID)
+        self.assertIsNotNone(device)
+
+        # Get all activities from device
+        activities = device.activities(limit=100)
+        self.assertIsNotNone(activities)
+        self.assertEqual(len(activities), 1)
+
+        # Force our device variable empty
+        # pylint: disable=W0212
+        device._device_activities = None
+
+        # Get all activities from device
+        activities = device.activities(limit=100)
+        self.assertIsNotNone(activities)
+        self.assertEqual(len(activities), 0)

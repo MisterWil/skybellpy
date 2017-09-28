@@ -9,7 +9,7 @@ EMPTY_ACTIVITIES_RESPONSE = '[]'
 def get_response_ok(dev_id=DEVICE.DEVID,
                     event=CONST.EVENT_BUTTON,
                     state=CONST.STATE_READY,
-                    video_state=CONST.VIDEO_STATE_READY,):
+                    video_state=CONST.VIDEO_STATE_READY):
     """Return the device activity response json."""
     return '''
     {

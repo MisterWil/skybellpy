@@ -79,12 +79,15 @@ WIFI_SSID = 'essid'
 CHECK_IN = 'checkedInAt'
 
 # DEVICE ACTIVITIES
+EVENT = 'event'
 EVENT_ON_DEMAND = 'application:on-demand'
 EVENT_BUTTON = 'device:sensor:button'
 EVENT_MOTION = 'device:sensor:motion'
 
+STATE = 'state'
 STATE_READY = 'ready'
 
+VIDEO_STATE = 'videoState'
 VIDEO_STATE_READY = 'download:ready'
 
 # DEVICE SETTINGS

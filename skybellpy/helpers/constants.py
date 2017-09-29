@@ -65,7 +65,7 @@ APP_ID = 'app_id'
 CLIENT_ID = 'client_id'
 TOKEN = 'token'
 ACCESS_TOKEN = 'access_token'
-
+DEVICES = 'devices'
 
 # DEVICE
 NAME = 'name'
@@ -89,6 +89,7 @@ EVENT = 'event'
 EVENT_ON_DEMAND = 'application:on-demand'
 EVENT_BUTTON = 'device:sensor:button'
 EVENT_MOTION = 'device:sensor:motion'
+CREATED_AT = 'createdAt'
 
 STATE = 'state'
 STATE_READY = 'ready'

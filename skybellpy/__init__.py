@@ -41,24 +41,21 @@ class Skybell():
         self._session = None
         self._cache_path = cache_path
         self._disable_cache = disable_cache
-        self._cache = None
-
         self._devices = None
-
-        # Create a requests session to persist the cookies
         self._session = requests.session()
 
-        # Load App ID, Client ID, and Token
-        if not disable_cache and os.path.exists(cache_path):
-            _LOGGER.debug("Cookies found at: %s", cache_path)
-            self._cache = UTILS.load_cache(cache_path)
-        else:
-            self._cache = {
-                CONST.APP_ID: UTILS.gen_id(),
-                CONST.CLIENT_ID: UTILS.gen_id(),
-                CONST.TOKEN: UTILS.gen_token(),
-                CONST.ACCESS_TOKEN: None
-            }
+        # Create a new cache template
+        self._cache = {
+            CONST.APP_ID: UTILS.gen_id(),
+            CONST.CLIENT_ID: UTILS.gen_id(),
+            CONST.TOKEN: UTILS.gen_token(),
+            CONST.ACCESS_TOKEN: None,
+            CONST.DEVICES: {}
+        }
+
+        # Load and merge an existing cache
+        if not disable_cache:
+            self._load_cache()
 
         if (self._username is not None and
                 self._password is not None and
@@ -100,10 +97,8 @@ class Skybell():
 
         response_object = json.loads(response.text)
 
-        self._cache[CONST.ACCESS_TOKEN] = response_object[CONST.ACCESS_TOKEN]
-
-        if not self._disable_cache:
-            UTILS.save_cache(self._cache, self._cache_path)
+        self.update_cache({
+            CONST.ACCESS_TOKEN: response_object[CONST.ACCESS_TOKEN]})
 
         _LOGGER.info("Login successful")
 
@@ -117,10 +112,8 @@ class Skybell():
             # we aren't currently doing.
             self._session = requests.session()
             self._devices = None
-            self._cache[CONST.ACCESS_TOKEN] = None
 
-            if not self._disable_cache:
-                UTILS.save_cache(self._cache, self._cache_path)
+            self.update_cache({CONST.ACCESS_TOKEN: None})
 
         return True
 
@@ -198,3 +191,43 @@ class Skybell():
             return self.send_request(method, url, headers, json_data, False)
 
         raise SkybellException(ERROR.REQUEST, "Retry failed")
+
+    def cache(self, key):
+        """Get a cached value."""
+        return self._cache.get(key)
+
+    def update_cache(self, data):
+        """Update a cached value."""
+        UTILS.update(self._cache, data)
+        self._save_cache()
+
+    def dev_cache(self, device, key=None):
+        """Get a cached value for a device."""
+        device_cache = self._cache.get(CONST.DEVICES, {}).get(device.device_id)
+
+        if device_cache and key:
+            return device_cache.get(key)
+
+        return device_cache
+
+    def update_dev_cache(self, device, data):
+        """Update cached values for a device."""
+        self.update_cache(
+            {
+                device.device_id: data
+            })
+
+    def _load_cache(self):
+        """Load existing cache and merge for updating if required."""
+        if not self._disable_cache and os.path.exists(self._cache_path):
+            _LOGGER.debug("Cache found at: %s", self._cache_path)
+            loaded_cache = UTILS.load_cache(self._cache_path)
+
+            UTILS.update(self._cache, loaded_cache)
+
+        self._save_cache()
+
+    def _save_cache(self):
+        """Trigger a cache save."""
+        if not self._disable_cache:
+            UTILS.save_cache(self._cache, self._cache_path)

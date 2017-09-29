@@ -224,7 +224,7 @@ class TestSkybell(unittest.TestCase):
         self.assertEqual(device.led_intensity, led_intensity)
 
     @requests_mock.mock()
-    def tests_device_settings_change(self, m):
+    def tests_settings_change(self, m):
         """Check that the Skybell device changes data."""
         m.post(CONST.LOGIN_URL, text=LOGIN.post_response_ok())
 
@@ -434,7 +434,7 @@ class TestSkybell(unittest.TestCase):
         device = self.skybell.get_device(DEVICE.DEVID)
         self.assertIsNotNone(device)
         # pylint: disable=W0212
-        self.assertEqual(device._device_activities, activities_json)
+        self.assertEqual(device._activities, activities_json)
 
         # Get all activities from device
         activities = device.activities(limit=100)
@@ -487,7 +487,7 @@ class TestSkybell(unittest.TestCase):
 
         # Force our device variable empty
         # pylint: disable=W0212
-        device._device_activities = None
+        device._activities = None
 
         # Get all activities from device
         activities = device.activities(limit=100)

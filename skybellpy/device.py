@@ -5,6 +5,7 @@ import logging
 from skybellpy.exceptions import SkybellException
 import skybellpy.helpers.constants as CONST
 import skybellpy.helpers.errors as ERROR
+import skybellpy.utils as UTILS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -19,84 +20,104 @@ class SkybellDevice(object):
         self._type = device_json.get(CONST.TYPE)
         self._skybell = skybell
 
-        self._device_info_json = self._device_info_request()
-        self._device_settings_json = self._device_settings_request()
-        self._device_activities = self._device_activities_request()
+        self._info_json = self._info_request()
+        self._settings_json = self._settings_request()
+
+        self._update_activities()
 
     def refresh(self):
         """Refresh the devices json object data."""
+        # Update core device data
         new_device_json = self._device_request()
         _LOGGER.debug("Device Refresh Response: %s", new_device_json)
 
-        new_device_info_json = self._device_info_request()
-        _LOGGER.debug("Device Info Refresh Response: %s", new_device_info_json)
+        # Update device detail info
+        new_info_json = self._info_request()
+        _LOGGER.debug("Device Info Refresh Response: %s", new_info_json)
 
-        new_device_settings_json = self._device_settings_request()
+        # Update device setting details
+        new_settings_json = self._settings_request()
         _LOGGER.debug("Device Settings Refresh Response: %s",
-                      new_device_settings_json)
+                      new_settings_json)
 
-        self.update(new_device_json, new_device_info_json,
-                    new_device_settings_json)
+        # Update the stored data
+        self.update(new_device_json, new_info_json, new_settings_json)
 
-        self._device_activities = self._device_activities_request()
-        _LOGGER.debug("Device Activities Response: %s",
-                      new_device_settings_json)
+        # Update the activities
+        self._update_activities()
 
     def _device_request(self):
         url = str.replace(CONST.DEVICE_URL, '$DEVID$', self.device_id)
         response = self._skybell.send_request(method="get", url=url)
         return json.loads(response.text)
 
-    def _device_info_request(self):
+    def _info_request(self):
         url = str.replace(CONST.DEVICE_INFO_URL, '$DEVID$', self.device_id)
         response = self._skybell.send_request(method="get", url=url)
         return json.loads(response.text)
 
-    def _device_settings_request(self, method="get", json_data=None):
+    def _settings_request(self, method="get", json_data=None):
         url = str.replace(CONST.DEVICE_SETTINGS_URL, '$DEVID$', self.device_id)
         response = self._skybell.send_request(method=method,
                                               url=url,
                                               json_data=json_data)
         return json.loads(response.text)
 
-    def _device_activities_request(self):
+    def _activities_request(self):
         url = str.replace(CONST.DEVICE_ACTIVITIES_URL,
                           '$DEVID$', self.device_id)
         response = self._skybell.send_request(method="get", url=url)
         return json.loads(response.text)
 
-    def update(self, device_json=None, device_info_json=None,
-               device_settings_json=None):
-        """Update the json data from a dictionary.
-
-        Only updates if it already exists in the device.
-        """
+    def update(self, device_json=None, info_json=None, settings_json=None):
+        """Update the internal device json data."""
         if device_json:
-            self._device_json.update(
-                {k: device_json[k] for k in device_json
-                 if k in self._device_json})
+            UTILS.update(self._device_json, device_json)
 
-        if device_info_json:
-            self._device_info_json.update(
-                {k: device_info_json[k] for k in device_info_json
-                 if k in self._device_info_json})
+        if info_json:
+            UTILS.update(self._info_json, info_json)
 
-        if device_settings_json:
-            self._device_settings_json.update(
-                {k: device_settings_json[k] for k in device_settings_json
-                 if k in self._device_settings_json})
+        if settings_json:
+            UTILS.update(self._settings_json, settings_json)
+
+    def _update_activities(self):
+        """Update stored activities and update caches as required."""
+        self._activities = self._activities_request()
+        _LOGGER.debug("Device Activities Response: %s", self._activities)
+
+        if not self._activities:
+            self._activities = []
+        elif not isinstance(self._activities, (list, tuple)):
+            self._activities = [self._activities]
+
+        self._update_events()
+
+    def _update_events(self):
+        """Update our cached list of latest activity events."""
+        events = self._skybell.dev_cache(self, CONST.EVENT) or {}
+
+        for activity in self._activities:
+            event = activity.get(CONST.EVENT)
+            created_at = activity.get(CONST.CREATED_AT)
+
+            old_event = events.get(event)
+
+            if old_event and created_at < old_event.get(CONST.CREATED_AT):
+                continue
+            else:
+                events[event] = activity
+
+        self._skybell.update_dev_cache(
+            self,
+            {
+                CONST.EVENT: events
+            })
 
     def activities(self, limit=1, event=None):
         """Return device activity information."""
-        activities = self._device_activities
+        activities = self._activities or []
 
-        # Make sure we're working with an array
-        if not activities:
-            activities = []
-        elif not isinstance(activities, (list, tuple)):
-            activities = [activities]
-
-        # Filter our activity array
+        # Filter our activity array if requested
         if event:
             activities = list(
                 filter(
@@ -112,9 +133,9 @@ class SkybellDevice(object):
             _validate_setting(key, value)
 
         try:
-            self._device_settings_request(method="patch", json_data=settings)
+            self._settings_request(method="patch", json_data=settings)
 
-            self.update(device_settings_json=settings)
+            self.update(settings_json=settings)
         except SkybellException as exc:
             _LOGGER.warning("Exception changing settings: %s", settings)
             _LOGGER.warning(exc)
@@ -160,23 +181,22 @@ class SkybellDevice(object):
     @property
     def wifi_status(self):
         """Get the wifi status."""
-        return self._device_info_json.get(
-            CONST.STATUS, {}).get(CONST.WIFI_LINK)
+        return self._info_json.get(CONST.STATUS, {}).get(CONST.WIFI_LINK)
 
     @property
     def wifi_ssid(self):
         """Get the wifi ssid."""
-        return self._device_info_json.get(CONST.WIFI_SSID)
+        return self._info_json.get(CONST.WIFI_SSID)
 
     @property
     def last_check_in(self):
         """Get last check in timestamp."""
-        return self._device_info_json.get(CONST.CHECK_IN)
+        return self._info_json.get(CONST.CHECK_IN)
 
     @property
     def do_not_disturb(self):
         """Get if do not disturb is enabled."""
-        return self._device_settings_json.get(CONST.SETTINGS_DO_NOT_DISTURB)
+        return self._settings_json.get(CONST.SETTINGS_DO_NOT_DISTURB)
 
     @do_not_disturb.setter
     def do_not_disturb(self, enabled):
@@ -186,7 +206,7 @@ class SkybellDevice(object):
     @property
     def outdoor_chime_level(self):
         """Get devices outdoor chime level."""
-        return self._device_settings_json.get(CONST.SETTINGS_OUTDOOR_CHIME)
+        return self._settings_json.get(CONST.SETTINGS_OUTDOOR_CHIME)
 
     @outdoor_chime_level.setter
     def outdoor_chime_level(self, level):
@@ -202,7 +222,7 @@ class SkybellDevice(object):
     def motion_sensor(self):
         """Get if the devices motion sensor is enabled."""
         return (
-            self._device_settings_json.get(CONST.SETTINGS_MOTION_POLICY) ==
+            self._settings_json.get(CONST.SETTINGS_MOTION_POLICY) ==
             CONST.SETTINGS_MOTION_POLICY_ON)
 
     @motion_sensor.setter
@@ -221,7 +241,7 @@ class SkybellDevice(object):
     @property
     def motion_threshold(self):
         """Get devices motion threshold."""
-        return self._device_settings_json.get(CONST.SETTINGS_MOTION_THRESHOLD)
+        return self._settings_json.get(CONST.SETTINGS_MOTION_THRESHOLD)
 
     @motion_threshold.setter
     def motion_threshold(self, threshold):
@@ -231,7 +251,7 @@ class SkybellDevice(object):
     @property
     def video_profile(self):
         """Get devices video profile."""
-        return self._device_settings_json.get(CONST.SETTINGS_VIDEO_PROFILE)
+        return self._settings_json.get(CONST.SETTINGS_VIDEO_PROFILE)
 
     @video_profile.setter
     def video_profile(self, profile):
@@ -241,9 +261,9 @@ class SkybellDevice(object):
     @property
     def led_rgb(self):
         """Get devices LED color."""
-        return (self._device_settings_json.get(CONST.SETTINGS_LED_R),
-                self._device_settings_json.get(CONST.SETTINGS_LED_G),
-                self._device_settings_json.get(CONST.SETTINGS_LED_B))
+        return (self._settings_json.get(CONST.SETTINGS_LED_R),
+                self._settings_json.get(CONST.SETTINGS_LED_G),
+                self._settings_json.get(CONST.SETTINGS_LED_B))
 
     @led_rgb.setter
     def led_rgb(self, color):
@@ -262,7 +282,7 @@ class SkybellDevice(object):
     @property
     def led_intensity(self):
         """Get devices LED intensity."""
-        return self._device_settings_json.get(CONST.SETTINGS_LED_INTENSITY)
+        return self._settings_json.get(CONST.SETTINGS_LED_INTENSITY)
 
     @led_intensity.setter
     def led_intensity(self, intensity):

@@ -179,9 +179,9 @@ def call():
 
     except SkybellException as exc:
         _LOGGER.error(exc)
-    finally:
-        if skybell:
-            skybell.logout()
+    # finally:
+        # if skybell:
+        # skybell.logout()
 
 
 def main():

@@ -325,12 +325,12 @@ class TestSkybell(unittest.TestCase):
         self.assertIsNotNone(dev2_dev)
         self.assertEqual(json.loads(dev1), dev1_dev._device_json)
         self.assertEqual(json.loads(dev2), dev2_dev._device_json)
-        self.assertEqual(json.loads(dev1_info), dev1_dev._device_info_json)
-        self.assertEqual(json.loads(dev2_info), dev2_dev._device_info_json)
+        self.assertEqual(json.loads(dev1_info), dev1_dev._info_json)
+        self.assertEqual(json.loads(dev2_info), dev2_dev._info_json)
         self.assertEqual(json.loads(dev1_settings),
-                         dev1_dev._device_settings_json)
+                         dev1_dev._settings_json)
         self.assertEqual(json.loads(dev2_settings),
-                         dev2_dev._device_settings_json)
+                         dev2_dev._settings_json)
 
     @requests_mock.mock()
     def test_all_device_refresh(self, m):

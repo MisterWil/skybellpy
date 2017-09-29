@@ -32,7 +32,7 @@ class TestSkybell(unittest.TestCase):
         self.skybell_no_cred = skybellpy.Skybell()
         self.skybell = skybellpy.Skybell(username=USERNAME,
                                          password=PASSWORD,
-                                         disable_cookies=True)
+                                         disable_cache=True)
 
     def tearDown(self):
         """Clean up after test."""
@@ -80,12 +80,12 @@ class TestSkybell(unittest.TestCase):
                                     password='buzz',
                                     auto_login=True,
                                     get_devices=False,
-                                    disable_cookies=True)
+                                    disable_cache=True)
 
         # pylint: disable=W0212
         self.assertEqual(skybell._username, 'fizz')
         self.assertEqual(skybell._password, 'buzz')
-        self.assertEqual(skybell._cookies['access_token'], MOCK.ACCESS_TOKEN)
+        self.assertEqual(skybell._cache['access_token'], MOCK.ACCESS_TOKEN)
         self.assertIsNone(skybell._devices)
 
         skybell.logout()
@@ -104,12 +104,12 @@ class TestSkybell(unittest.TestCase):
         skybell = skybellpy.Skybell(username='fizz',
                                     password='buzz',
                                     get_devices=True,
-                                    disable_cookies=True)
+                                    disable_cache=True)
 
         # pylint: disable=W0212
         self.assertEqual(skybell._username, 'fizz')
         self.assertEqual(skybell._password, 'buzz')
-        self.assertEqual(skybell._cookies['access_token'], MOCK.ACCESS_TOKEN)
+        self.assertEqual(skybell._cache['access_token'], MOCK.ACCESS_TOKEN)
         self.assertEqual(len(skybell._devices), 0)
 
         skybell.logout()
@@ -142,7 +142,7 @@ class TestSkybell(unittest.TestCase):
         # pylint: disable=W0212
         self.assertEqual(self.skybell._username, USERNAME)
         self.assertEqual(self.skybell._password, PASSWORD)
-        self.assertEqual(self.skybell._cookies['access_token'],
+        self.assertEqual(self.skybell._cache['access_token'],
                          MOCK.ACCESS_TOKEN)
         self.assertEqual(len(self.skybell._devices), 0)
         self.assertIsNotNone(self.skybell._session)
@@ -150,7 +150,7 @@ class TestSkybell(unittest.TestCase):
 
         self.skybell.logout()
 
-        self.assertIsNone(self.skybell._cookies['access_token'])
+        self.assertIsNone(self.skybell._cache['access_token'])
         self.assertIsNone(self.skybell._devices)
         self.assertIsNotNone(self.skybell._session)
         self.assertNotEqual(self.skybell._session, original_session)
@@ -175,7 +175,7 @@ class TestSkybell(unittest.TestCase):
         self.skybell.get_devices(refresh=True)
 
         # pylint: disable=W0212
-        self.assertEqual(self.skybell._cookies['access_token'], new_token)
+        self.assertEqual(self.skybell._cache['access_token'], new_token)
 
         self.skybell.logout()
 
@@ -197,7 +197,7 @@ class TestSkybell(unittest.TestCase):
         self.skybell.get_devices(refresh=True)
 
         # pylint: disable=W0212
-        self.assertEqual(self.skybell._cookies['access_token'], new_token)
+        self.assertEqual(self.skybell._cache['access_token'], new_token)
 
         self.skybell.logout()
 
@@ -218,64 +218,64 @@ class TestSkybell(unittest.TestCase):
         m.post(CONST.LOGIN_URL, text=LOGIN.post_response_ok())
 
         # Define test pickle file and cleanup old one if exists
-        cookies_path = "./test_cookies.pickle"
+        cache_path = "./test_cookies.pickle"
 
-        if os.path.exists(cookies_path):
-            os.remove(cookies_path)
+        if os.path.exists(cache_path):
+            os.remove(cache_path)
 
         # Assert that no cookies file exists
-        self.assertFalse(os.path.exists(cookies_path))
+        self.assertFalse(os.path.exists(cache_path))
 
         # Cookies are created
         skybell = skybellpy.Skybell(username='fizz',
                                     password='buzz',
                                     auto_login=False,
-                                    cookies_path=cookies_path)
+                                    cache_path=cache_path)
 
         # Test that our cookies are fully realized prior to login
         # pylint: disable=W0212
-        self.assertIsNotNone(skybell._cookies['app_id'])
-        self.assertIsNotNone(skybell._cookies['client_id'])
-        self.assertIsNotNone(skybell._cookies['token'])
-        self.assertIsNone(skybell._cookies['access_token'])
+        self.assertIsNotNone(skybell._cache['app_id'])
+        self.assertIsNotNone(skybell._cache['client_id'])
+        self.assertIsNotNone(skybell._cache['token'])
+        self.assertIsNone(skybell._cache['access_token'])
 
         # Login to get the access_token
         skybell.login()
 
         # Test that we now have an access token
-        self.assertIsNotNone(skybell._cookies['access_token'])
+        self.assertIsNotNone(skybell._cache['access_token'])
 
         # Test that we now have a cookies file
-        self.assertTrue(os.path.exists(cookies_path))
+        self.assertTrue(os.path.exists(cache_path))
 
         # Copy our current cookies file and data
-        first_pickle = open(cookies_path, 'rb').read()
-        first_cookies_data = skybell._cookies
+        first_pickle = open(cache_path, 'rb').read()
+        first_cookies_data = skybell._cache
 
         # Test that logout clears the auth token
         skybell.logout()
 
-        self.assertIsNone(skybell._cookies['access_token'])
+        self.assertIsNone(skybell._cache['access_token'])
 
         # Tests that our pickle file has changed with the cleared token
-        self.assertNotEqual(first_pickle, open(cookies_path, 'rb').read())
+        self.assertNotEqual(first_pickle, open(cache_path, 'rb').read())
 
         # New skybell instance reads in old data
         skybell = skybellpy.Skybell(username='fizz',
                                     password='buzz',
                                     auto_login=False,
-                                    cookies_path=cookies_path)
+                                    cache_path=cache_path)
 
         # Test that the cookie data is the same
-        self.assertEqual(skybell._cookies['app_id'],
+        self.assertEqual(skybell._cache['app_id'],
                          first_cookies_data['app_id'])
-        self.assertEqual(skybell._cookies['client_id'],
+        self.assertEqual(skybell._cache['client_id'],
                          first_cookies_data['client_id'])
-        self.assertEqual(skybell._cookies['token'],
+        self.assertEqual(skybell._cache['token'],
                          first_cookies_data['token'])
 
         # Cleanup cookies
-        os.remove(cookies_path)
+        os.remove(cache_path)
 
     @requests_mock.mock()
     def test_get_device(self, m):

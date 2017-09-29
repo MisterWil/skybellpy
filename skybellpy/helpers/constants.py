@@ -38,7 +38,7 @@ PROJECT_GITHUB_REPOSITORY = 'skybellpy'
 
 PYPI_URL = 'https://pypi.python.org/pypi/{}'.format(PROJECT_PACKAGE_NAME)
 
-COOKIES_PATH = './skybell_cookies.pickle'
+CACHE_PATH = './skybell.pickle'
 
 # URLS
 BASE_URL = 'https://cloud.myskybell.com/api/v3/'

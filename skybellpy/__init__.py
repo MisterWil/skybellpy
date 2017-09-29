@@ -16,10 +16,6 @@ www.skybell.com for more information. I am in no way affiliated with Skybell.
 import os.path
 import json
 import logging
-import pickle
-import uuid
-import random
-import string
 import requests
 from requests.exceptions import RequestException
 
@@ -28,27 +24,9 @@ from skybellpy.exceptions import (
     SkybellAuthenticationException, SkybellException)
 import skybellpy.helpers.constants as CONST
 import skybellpy.helpers.errors as ERROR
+import skybellpy.utils as UTILS
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def _save_cookies(data, filename):
-    """Save cookies to a file."""
-    with open(filename, 'wb') as handle:
-        pickle.dump(data, handle)
-
-
-def _load_cookies(filename):
-    """Load cookies from a file."""
-    with open(filename, 'rb') as handle:
-        return pickle.load(handle)
-
-
-def _gen_token():
-    return ''.join(
-        random.choice(
-            string.ascii_uppercase + string.ascii_lowercase + string.digits)
-        for _ in range(32))
 
 
 class Skybell():
@@ -56,14 +34,14 @@ class Skybell():
 
     def __init__(self, username=None, password=None,
                  auto_login=False, get_devices=False,
-                 cookies_path=CONST.COOKIES_PATH, disable_cookies=False):
+                 cache_path=CONST.CACHE_PATH, disable_cache=False):
         """Init Abode object."""
         self._username = username
         self._password = password
         self._session = None
-        self._cookies_path = cookies_path
-        self._disable_cookies = disable_cookies
-        self._cookies = None
+        self._cache_path = cache_path
+        self._disable_cache = disable_cache
+        self._cache = None
 
         self._devices = None
 
@@ -71,14 +49,14 @@ class Skybell():
         self._session = requests.session()
 
         # Load App ID, Client ID, and Token
-        if not disable_cookies and os.path.exists(cookies_path):
-            _LOGGER.debug("Cookies found at: %s", cookies_path)
-            self._cookies = _load_cookies(cookies_path)
+        if not disable_cache and os.path.exists(cache_path):
+            _LOGGER.debug("Cookies found at: %s", cache_path)
+            self._cache = UTILS.load_cache(cache_path)
         else:
-            self._cookies = {
-                'app_id': str(uuid.uuid4()),
-                'client_id': str(uuid.uuid4()),
-                'token': _gen_token(),
+            self._cache = {
+                'app_id': UTILS.gen_id(),
+                'client_id': UTILS.gen_id(),
+                'token': UTILS.gen_token(),
                 'access_token': None
             }
 
@@ -103,13 +81,13 @@ class Skybell():
         if self._password is None or not isinstance(self._password, str):
             raise SkybellAuthenticationException(ERROR.PASSWORD)
 
-        self._cookies['access_token'] = None
+        self._cache['access_token'] = None
 
         login_data = {
             'username': self._username,
             'password': self._password,
-            'appId': self._cookies['app_id'],
-            'token': self._cookies['token']
+            'appId': self._cache['app_id'],
+            'token': self._cache['token']
         }
 
         try:
@@ -122,10 +100,10 @@ class Skybell():
 
         response_object = json.loads(response.text)
 
-        self._cookies['access_token'] = response_object['access_token']
+        self._cache['access_token'] = response_object['access_token']
 
-        if not self._disable_cookies:
-            _save_cookies(self._cookies, self._cookies_path)
+        if not self._disable_cache:
+            UTILS.save_cache(self._cache, self._cache_path)
 
         _LOGGER.info("Login successful")
 
@@ -133,16 +111,16 @@ class Skybell():
 
     def logout(self):
         """Explicit Skybell logout."""
-        if self._cookies['access_token']:
+        if self._cache['access_token']:
             # No explicit logout call as it doesn't seem to matter
             # if a logout happens without registering the app which
             # we aren't currently doing.
             self._session = requests.session()
             self._devices = None
-            self._cookies['access_token'] = None
+            self._cache['access_token'] = None
 
-            if not self._disable_cookies:
-                _save_cookies(self._cookies, self._cookies_path)
+            if not self._disable_cache:
+                UTILS.save_cache(self._cache, self._cache_path)
 
         return True
 
@@ -187,23 +165,23 @@ class Skybell():
     def send_request(self, method, url, headers=None,
                      json_data=None, retry=True):
         """Send requests to Skybell."""
-        if not self._cookies['access_token'] and url != CONST.LOGIN_URL:
+        if not self._cache['access_token'] and url != CONST.LOGIN_URL:
             self.login()
 
         if not headers:
             headers = {}
 
-        if self._cookies['access_token']:
+        if self._cache['access_token']:
             headers['Authorization'] = 'Bearer ' + \
-                self._cookies['access_token']
+                self._cache['access_token']
 
         headers['user-agent'] = (
             'SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) '
             'com.skybell.doorbell/1')
         headers['content-type'] = 'application/json'
         headers['accepts'] = '*/*'
-        headers['x-skybell-app-id'] = self._cookies['app_id']
-        headers['x-skybell-client-id'] = self._cookies['client_id']
+        headers['x-skybell-app-id'] = self._cache['app_id']
+        headers['x-skybell-client-id'] = self._cache['client_id']
 
         try:
             response = getattr(self._session, method)(

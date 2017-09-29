@@ -60,6 +60,13 @@ SUBSCRIPTION_URL = BASE_URL + 'subscriptions/$SUBSCRIPTIONID$/'
 SUBSCRIPTION_INFO_URL = SUBSCRIPTION_URL + '/info/'
 SUBSCRIPTION_SETTINGS_URL = SUBSCRIPTION_URL + '/settings/'
 
+# GENERAL
+APP_ID = 'app_id'
+CLIENT_ID = 'client_id'
+TOKEN = 'token'
+ACCESS_TOKEN = 'access_token'
+
+
 # DEVICE
 NAME = 'name'
 ID = 'id'
@@ -73,7 +80,6 @@ AVATAR = 'avatar'
 AVATAR_URL = 'url'
 
 # DEVICE INFO
-
 WIFI_LINK = 'wifiLink'
 WIFI_SSID = 'essid'
 CHECK_IN = 'checkedInAt'

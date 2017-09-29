@@ -54,10 +54,10 @@ class Skybell():
             self._cache = UTILS.load_cache(cache_path)
         else:
             self._cache = {
-                'app_id': UTILS.gen_id(),
-                'client_id': UTILS.gen_id(),
-                'token': UTILS.gen_token(),
-                'access_token': None
+                CONST.APP_ID: UTILS.gen_id(),
+                CONST.CLIENT_ID: UTILS.gen_id(),
+                CONST.TOKEN: UTILS.gen_token(),
+                CONST.ACCESS_TOKEN: None
             }
 
         if (self._username is not None and
@@ -81,13 +81,13 @@ class Skybell():
         if self._password is None or not isinstance(self._password, str):
             raise SkybellAuthenticationException(ERROR.PASSWORD)
 
-        self._cache['access_token'] = None
+        self._cache[CONST.ACCESS_TOKEN] = None
 
         login_data = {
             'username': self._username,
             'password': self._password,
-            'appId': self._cache['app_id'],
-            'token': self._cache['token']
+            'appId': self._cache[CONST.APP_ID],
+            CONST.TOKEN: self._cache[CONST.TOKEN]
         }
 
         try:
@@ -100,7 +100,7 @@ class Skybell():
 
         response_object = json.loads(response.text)
 
-        self._cache['access_token'] = response_object['access_token']
+        self._cache[CONST.ACCESS_TOKEN] = response_object[CONST.ACCESS_TOKEN]
 
         if not self._disable_cache:
             UTILS.save_cache(self._cache, self._cache_path)
@@ -111,13 +111,13 @@ class Skybell():
 
     def logout(self):
         """Explicit Skybell logout."""
-        if self._cache['access_token']:
+        if self._cache[CONST.ACCESS_TOKEN]:
             # No explicit logout call as it doesn't seem to matter
             # if a logout happens without registering the app which
             # we aren't currently doing.
             self._session = requests.session()
             self._devices = None
-            self._cache['access_token'] = None
+            self._cache[CONST.ACCESS_TOKEN] = None
 
             if not self._disable_cache:
                 UTILS.save_cache(self._cache, self._cache_path)
@@ -165,23 +165,23 @@ class Skybell():
     def send_request(self, method, url, headers=None,
                      json_data=None, retry=True):
         """Send requests to Skybell."""
-        if not self._cache['access_token'] and url != CONST.LOGIN_URL:
+        if not self._cache[CONST.ACCESS_TOKEN] and url != CONST.LOGIN_URL:
             self.login()
 
         if not headers:
             headers = {}
 
-        if self._cache['access_token']:
+        if self._cache[CONST.ACCESS_TOKEN]:
             headers['Authorization'] = 'Bearer ' + \
-                self._cache['access_token']
+                self._cache[CONST.ACCESS_TOKEN]
 
         headers['user-agent'] = (
             'SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) '
             'com.skybell.doorbell/1')
         headers['content-type'] = 'application/json'
         headers['accepts'] = '*/*'
-        headers['x-skybell-app-id'] = self._cache['app_id']
-        headers['x-skybell-client-id'] = self._cache['client_id']
+        headers['x-skybell-app-id'] = self._cache[CONST.APP_ID]
+        headers['x-skybell-client-id'] = self._cache[CONST.CLIENT_ID]
 
         try:
             response = getattr(self._session, method)(

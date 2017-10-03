@@ -3,6 +3,7 @@ Test Skybell device functionality.
 
 Tests the device initialization and attributes of the Skybell device class.
 """
+import datetime
 import json
 import unittest
 
@@ -493,3 +494,117 @@ class TestSkybell(unittest.TestCase):
         activities = device.activities(limit=100)
         self.assertIsNotNone(activities)
         self.assertEqual(len(activities), 0)
+
+    @requests_mock.mock()
+    def tests_latest_event(self, m):
+        """Check that the latest event is always obtained."""
+        m.post(CONST.LOGIN_URL, text=LOGIN.post_response_ok())
+
+        # Set up device
+        device_text = '[' + DEVICE.get_response_ok() + ']'
+        info_text = DEVICE_INFO.get_response_ok()
+        info_url = str.replace(CONST.DEVICE_INFO_URL, '$DEVID$', DEVICE.DEVID)
+
+        settings_text = DEVICE_SETTINGS.get_response_ok()
+        settings_url = str.replace(CONST.DEVICE_SETTINGS_URL,
+                                   '$DEVID$', DEVICE.DEVID)
+
+        activity_1 = DEVICE_ACTIVITIES.get_response_ok(
+            dev_id=DEVICE.DEVID,
+            event=CONST.EVENT_BUTTON,
+            state='alpha',
+            created_at=datetime.datetime(2017, 1, 1, 0, 0, 0))
+
+        activity_2 = DEVICE_ACTIVITIES.get_response_ok(
+            dev_id=DEVICE.DEVID,
+            event=CONST.EVENT_BUTTON,
+            state='beta',
+            created_at=datetime.datetime(2017, 1, 1, 0, 0, 1))
+
+        activities_text = '[' + activity_1 + ',' + activity_2 + ']'
+
+        activities_url = str.replace(CONST.DEVICE_ACTIVITIES_URL,
+                                     '$DEVID$', DEVICE.DEVID)
+
+        m.get(CONST.DEVICES_URL, text=device_text)
+        m.get(info_url, text=info_text)
+        m.get(settings_url, text=settings_text)
+        m.get(activities_url, text=activities_text)
+
+        # Logout to reset everything
+        self.skybell.logout()
+
+        # Get our specific device
+        device = self.skybell.get_device(DEVICE.DEVID)
+        self.assertIsNotNone(device)
+
+        # Get latest button event
+        event = device.latest(CONST.EVENT_BUTTON)
+
+        # Test
+        self.assertIsNotNone(event)
+        self.assertEqual(event.get(CONST.STATE), 'beta')
+
+    @requests_mock.mock()
+    def tests_newest_event_cached(self, m):
+        """Check that the a newer cached event is kept over an older event."""
+        m.post(CONST.LOGIN_URL, text=LOGIN.post_response_ok())
+
+        # Set up device
+        device = DEVICE.get_response_ok()
+        device_text = '[' + device + ']'
+        device_url = str.replace(CONST.DEVICE_URL, '$DEVID$', DEVICE.DEVID)
+
+        info_text = DEVICE_INFO.get_response_ok()
+        info_url = str.replace(CONST.DEVICE_INFO_URL, '$DEVID$', DEVICE.DEVID)
+
+        settings_text = DEVICE_SETTINGS.get_response_ok()
+        settings_url = str.replace(CONST.DEVICE_SETTINGS_URL,
+                                   '$DEVID$', DEVICE.DEVID)
+
+        activity_1 = DEVICE_ACTIVITIES.get_response_ok(
+            dev_id=DEVICE.DEVID,
+            event=CONST.EVENT_BUTTON,
+            state='alpha',
+            created_at=datetime.datetime(2017, 1, 1, 0, 0, 0))
+
+        activities_url = str.replace(CONST.DEVICE_ACTIVITIES_URL,
+                                     '$DEVID$', DEVICE.DEVID)
+
+        m.get(CONST.DEVICES_URL, text=device_text)
+        m.get(device_url, text=device)
+        m.get(info_url, text=info_text)
+        m.get(settings_url, text=settings_text)
+        m.get(activities_url, text='[' + activity_1 + ']')
+
+        # Logout to reset everything
+        self.skybell.logout()
+
+        # Get our specific device
+        device = self.skybell.get_device(DEVICE.DEVID)
+        self.assertIsNotNone(device)
+
+        # Get latest button event
+        event = device.latest(CONST.EVENT_BUTTON)
+
+        # Test
+        self.assertIsNotNone(event)
+        self.assertEqual(event.get(CONST.STATE), 'alpha')
+
+        activity_2 = DEVICE_ACTIVITIES.get_response_ok(
+            dev_id=DEVICE.DEVID,
+            event=CONST.EVENT_BUTTON,
+            state='beta',
+            created_at=datetime.datetime(2014, 1, 1, 0, 0, 1))
+
+        m.get(activities_url, text='[' + activity_2 + ']')
+
+        # Refresh device
+        device.refresh()
+
+        # Get latest button event
+        event = device.latest(CONST.EVENT_BUTTON)
+
+        # Test
+        self.assertIsNotNone(event)
+        self.assertEqual(event.get(CONST.STATE), 'alpha')

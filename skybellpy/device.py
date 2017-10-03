@@ -127,6 +127,12 @@ class SkybellDevice(object):
         # Return the requested number
         return activities[:limit]
 
+    def latest(self, event):
+        """Return the latest event activity."""
+        events = self._skybell.dev_cache(self, CONST.EVENT) or {}
+        # self._skybell._cache)
+        return events.get(event)
+
     def _set_setting(self, settings):
         """Validate the settings and then send the PATCH request."""
         for key, value in settings.items():

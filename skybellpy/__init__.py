@@ -78,13 +78,16 @@ class Skybell():
         if self._password is None or not isinstance(self._password, str):
             raise SkybellAuthenticationException(ERROR.PASSWORD)
 
-        self._cache[CONST.ACCESS_TOKEN] = None
+        self.update_cache(
+            {
+                CONST.ACCESS_TOKEN: None
+            })
 
         login_data = {
             'username': self._username,
             'password': self._password,
-            'appId': self._cache[CONST.APP_ID],
-            CONST.TOKEN: self._cache[CONST.TOKEN]
+            'appId': self.cache(CONST.APP_ID),
+            CONST.TOKEN: self.cache(CONST.TOKEN)
         }
 
         try:
@@ -106,7 +109,7 @@ class Skybell():
 
     def logout(self):
         """Explicit Skybell logout."""
-        if self._cache[CONST.ACCESS_TOKEN]:
+        if self.cache(CONST.ACCESS_TOKEN):
             # No explicit logout call as it doesn't seem to matter
             # if a logout happens without registering the app which
             # we aren't currently doing.
@@ -158,23 +161,23 @@ class Skybell():
     def send_request(self, method, url, headers=None,
                      json_data=None, retry=True):
         """Send requests to Skybell."""
-        if not self._cache[CONST.ACCESS_TOKEN] and url != CONST.LOGIN_URL:
+        if not self.cache(CONST.ACCESS_TOKEN) and url != CONST.LOGIN_URL:
             self.login()
 
         if not headers:
             headers = {}
 
-        if self._cache[CONST.ACCESS_TOKEN]:
+        if self.cache(CONST.ACCESS_TOKEN):
             headers['Authorization'] = 'Bearer ' + \
-                self._cache[CONST.ACCESS_TOKEN]
+                self.cache(CONST.ACCESS_TOKEN)
 
         headers['user-agent'] = (
             'SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) '
             'com.skybell.doorbell/1')
         headers['content-type'] = 'application/json'
         headers['accepts'] = '*/*'
-        headers['x-skybell-app-id'] = self._cache[CONST.APP_ID]
-        headers['x-skybell-client-id'] = self._cache[CONST.CLIENT_ID]
+        headers['x-skybell-app-id'] = self.cache(CONST.APP_ID)
+        headers['x-skybell-client-id'] = self.cache(CONST.CLIENT_ID)
 
         try:
             response = getattr(self._session, method)(
@@ -214,7 +217,9 @@ class Skybell():
         """Update cached values for a device."""
         self.update_cache(
             {
-                device.device_id: data
+                CONST.DEVICES: {
+                    device.device_id: data
+                }
             })
 
     def _load_cache(self):

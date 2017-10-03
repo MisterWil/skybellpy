@@ -1,4 +1,5 @@
 """The device class used by SkybellPy."""
+import distutils
 import json
 import logging
 
@@ -202,12 +203,16 @@ class SkybellDevice(object):
     @property
     def do_not_disturb(self):
         """Get if do not disturb is enabled."""
-        return self._settings_json.get(CONST.SETTINGS_DO_NOT_DISTURB)
+        return bool(distutils.util.strtobool(str(self._settings_json.get(
+            CONST.SETTINGS_DO_NOT_DISTURB))))
 
     @do_not_disturb.setter
     def do_not_disturb(self, enabled):
         """Set do not disturb."""
-        self._set_setting({CONST.SETTINGS_DO_NOT_DISTURB: enabled})
+        self._set_setting(
+            {
+                CONST.SETTINGS_DO_NOT_DISTURB: str(enabled).lower()
+            })
 
     @property
     def outdoor_chime_level(self):
@@ -267,9 +272,9 @@ class SkybellDevice(object):
     @property
     def led_rgb(self):
         """Get devices LED color."""
-        return (self._settings_json.get(CONST.SETTINGS_LED_R),
-                self._settings_json.get(CONST.SETTINGS_LED_G),
-                self._settings_json.get(CONST.SETTINGS_LED_B))
+        return (int(self._settings_json.get(CONST.SETTINGS_LED_R)),
+                int(self._settings_json.get(CONST.SETTINGS_LED_G)),
+                int(self._settings_json.get(CONST.SETTINGS_LED_B)))
 
     @led_rgb.setter
     def led_rgb(self, color):
@@ -288,7 +293,7 @@ class SkybellDevice(object):
     @property
     def led_intensity(self):
         """Get devices LED intensity."""
-        return self._settings_json.get(CONST.SETTINGS_LED_INTENSITY)
+        return int(self._settings_json.get(CONST.SETTINGS_LED_INTENSITY))
 
     @led_intensity.setter
     def led_intensity(self, intensity):

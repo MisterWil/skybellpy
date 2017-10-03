@@ -23,3 +23,5 @@ disable=
   too-many-statements,
   too-many-lines,
   too-few-public-methods,
+  
+ignored-modules=distutils,distutils.util

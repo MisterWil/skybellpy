@@ -1,5 +1,5 @@
 """The device class used by SkybellPy."""
-import distutils
+import distutils.util
 import json
 import logging
 

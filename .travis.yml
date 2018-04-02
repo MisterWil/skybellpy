@@ -12,7 +12,7 @@ matrix:
     - python: "3.5"
       env: TOXENV=build
     - python: "3.5"
-      env: TOXENV=pylint
+      env: TOXENV=lint
 
 install: pip install -U tox coveralls
 language: python

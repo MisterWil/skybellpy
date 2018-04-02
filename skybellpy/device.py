@@ -1,8 +1,8 @@
 """The device class used by SkybellPy."""
-import distutils
 import json
 import logging
 
+import distutils
 try:
     import distutils.utils
 except ImportError:

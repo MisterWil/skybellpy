@@ -3,9 +3,9 @@ import json
 import logging
 
 try:
-  import distutils.utils
+    import distutils.utils
 except ImportError:
-  import distutils
+    import distutils
 
 from skybellpy.exceptions import SkybellException
 import skybellpy.helpers.constants as CONST

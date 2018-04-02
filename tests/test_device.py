@@ -4,10 +4,10 @@ Test Skybell device functionality.
 Tests the device initialization and attributes of the Skybell device class.
 """
 import datetime
-import distutils
 import json
 import unittest
 
+import distutils
 try:
     import distutils.utils
 except ImportError:

@@ -14,7 +14,7 @@ matrix:
     - python: "3.5"
       env: TOXENV=lint
 
-install: pip install -U tox coveralls
+install: pip install -U tox coveralls pylint==1.7.5
 language: python
 script: tox
 after_success: coveralls

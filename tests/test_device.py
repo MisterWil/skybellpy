@@ -4,7 +4,8 @@ Test Skybell device functionality.
 Tests the device initialization and attributes of the Skybell device class.
 """
 import datetime
-import distutils.utils  # pylint: disable=no-name-in-module,import-error
+import distutils
+from distutils import utils  # pylint: disable=import-error
 import json
 import unittest
 

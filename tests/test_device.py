@@ -7,8 +7,8 @@ import datetime
 import json
 import unittest
 
-import distutils
 try:
+    import distutils
     import distutils.utils
 except ImportError:
     pass

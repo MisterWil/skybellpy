@@ -1,5 +1,5 @@
 """The device class used by SkybellPy."""
-import distutils.utils  # pylint: disable=import-error
+import distutils.utils  # pylint: disable=no-name-in-module,import-error
 import json
 import logging
 

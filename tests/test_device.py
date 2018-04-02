@@ -234,7 +234,7 @@ class TestSkybell(unittest.TestCase):
                 s = str(s).strip().lower()[0]
             except IndexError:
                 s = ""
-            return not s in ['f', 'n', '0', '']
+            return s not in ['f', 'n', '0', '']
 
         m.post(CONST.LOGIN_URL, text=LOGIN.post_response_ok())
 

@@ -1,7 +1,12 @@
 """The device class used by SkybellPy."""
-import distutils.utils
+import distutils
 import json
 import logging
+
+try:
+    import distutils.utils
+except ImportError:
+    pass
 
 from skybellpy.exceptions import SkybellException
 import skybellpy.helpers.constants as CONST

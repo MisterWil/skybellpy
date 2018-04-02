@@ -1,16 +1,17 @@
 """The device class used by SkybellPy."""
 import json
 import logging
-
-try:
-    import distutils.utils
-except ImportError:
-    import distutils
+import distutils
 
 from skybellpy.exceptions import SkybellException
 import skybellpy.helpers.constants as CONST
 import skybellpy.helpers.errors as ERROR
 import skybellpy.utils as UTILS
+
+try:
+    from distutils import utils
+except ImportError:
+    pass
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -3,16 +3,16 @@ matrix:
   include:
     - python: "3.4.2"
       env: TOXENV=py34
-    - python: "3.4.2"
-      env: TOXENV=lint
     - python: "3.5"
       env: TOXENV=py35
     - python: "3.6"
       env: TOXENV=py36
     - python: "3.6-dev"
       env: TOXENV=py36
-    - python: "3.4.2"
+    - python: "3.5"
       env: TOXENV=build
+    - python: "3.5"
+      env: TOXENV=pylint
 
 install: pip install -U tox coveralls
 language: python

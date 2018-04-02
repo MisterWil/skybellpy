@@ -227,14 +227,15 @@ class TestSkybell(unittest.TestCase):
     @requests_mock.mock()
     def tests_settings_change(self, m):
         """Check that the Skybell device changes data."""
-        def strtobool(s):
-            if s is True or s is False:
-                return s
+        def strtobool(value):
+            """Convert a variable to a boolean value."""
+            if value is True or value is False:
+                return value
             try:
-                s = str(s).strip().lower()[0]
+                value = str(value).strip().lower()[0]
             except IndexError:
-                s = ""
-            return s not in ['f', 'n', '0', '']
+                value = ""
+            return value not in ['f', 'n', '0', '']
 
         m.post(CONST.LOGIN_URL, text=LOGIN.post_response_ok())
 

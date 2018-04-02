@@ -7,8 +7,6 @@ import datetime
 import json
 import unittest
 
-from distutils import utils as ut
-
 import requests_mock
 
 import skybellpy
@@ -229,6 +227,15 @@ class TestSkybell(unittest.TestCase):
     @requests_mock.mock()
     def tests_settings_change(self, m):
         """Check that the Skybell device changes data."""
+        def strtobool(s):
+            if s is True or s is False:
+                return s
+            try:
+                s = str(s).strip().lower()[0]
+            except IndexError:
+                s = ""
+            return not s in ['f', 'n', '0', '']
+
         m.post(CONST.LOGIN_URL, text=LOGIN.post_response_ok())
 
         # Set up device
@@ -260,7 +267,7 @@ class TestSkybell(unittest.TestCase):
         for value in CONST.SETTINGS_DO_NOT_DISTURB_VALUES:
             device.do_not_disturb = value
             self.assertEqual(device.do_not_disturb,
-                             distutils.util.strtobool(value))
+                             strtobool(value))
 
         for value in CONST.SETTINGS_OUTDOOR_CHIME_VALUES:
             device.outdoor_chime_level = value

@@ -2,8 +2,8 @@
 import json
 import logging
 
-import distutils
 try:
+    import distutils
     import distutils.utils
 except ImportError:
     pass

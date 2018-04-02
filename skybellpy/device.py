@@ -1,5 +1,4 @@
 """The device class used by SkybellPy."""
-import distutils
 import json
 import logging
 
@@ -203,8 +202,18 @@ class SkybellDevice(object):
     @property
     def do_not_disturb(self):
         """Get if do not disturb is enabled."""
-        return bool(distutils.util.strtobool(str(self._settings_json.get(
-            CONST.SETTINGS_DO_NOT_DISTURB))))
+        def strtobool(value):
+            """Convert a variable to a boolean value."""
+            if value is True or value is False:
+                return value
+            try:
+                value = str(value).strip().lower()[0]
+            except IndexError:
+                value = ""
+            return value not in ['f', 'n', '0', '']
+
+        return strtobool(self._settings_json.get(
+            CONST.SETTINGS_DO_NOT_DISTURB))
 
     @do_not_disturb.setter
     def do_not_disturb(self, enabled):

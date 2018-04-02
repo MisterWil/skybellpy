@@ -4,7 +4,6 @@ Test Skybell device functionality.
 Tests the device initialization and attributes of the Skybell device class.
 """
 import datetime
-import distutils
 import json
 import unittest
 
@@ -228,6 +227,16 @@ class TestSkybell(unittest.TestCase):
     @requests_mock.mock()
     def tests_settings_change(self, m):
         """Check that the Skybell device changes data."""
+        def strtobool(value):
+            """Convert a variable to a boolean value."""
+            if value is True or value is False:
+                return value
+            try:
+                value = str(value).strip().lower()[0]
+            except IndexError:
+                value = ""
+            return value not in ['f', 'n', '0', '']
+
         m.post(CONST.LOGIN_URL, text=LOGIN.post_response_ok())
 
         # Set up device
@@ -259,7 +268,7 @@ class TestSkybell(unittest.TestCase):
         for value in CONST.SETTINGS_DO_NOT_DISTURB_VALUES:
             device.do_not_disturb = value
             self.assertEqual(device.do_not_disturb,
-                             distutils.util.strtobool(value))
+                             strtobool(value))
 
         for value in CONST.SETTINGS_OUTDOOR_CHIME_VALUES:
             device.outdoor_chime_level = value

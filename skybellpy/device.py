@@ -1,12 +1,7 @@
 """The device class used by SkybellPy."""
+import distutils.utils # pylint: disable=import-error
 import json
 import logging
-
-try:
-    import distutils
-    import distutils.utils
-except ImportError:
-    pass
 
 from skybellpy.exceptions import SkybellException
 import skybellpy.helpers.constants as CONST

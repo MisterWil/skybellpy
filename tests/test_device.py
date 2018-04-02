@@ -5,9 +5,13 @@ Tests the device initialization and attributes of the Skybell device class.
 """
 import datetime
 import distutils
-from distutils import utils
 import json
 import unittest
+
+try:
+    import distutils.utils
+except ImportError:
+    pass
 
 import requests_mock
 

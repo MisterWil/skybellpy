@@ -1,5 +1,4 @@
 """The device class used by SkybellPy."""
-import distutils
 import json
 import logging
 
@@ -210,7 +209,7 @@ class SkybellDevice(object):
                 s = str(s).strip().lower()[0]
             except IndexError:
                 s = ""
-            return not s in ['f', 'n', '0', '']
+            return s not in ['f', 'n', '0', '']
 
         return strtobool(self._settings_json.get(
             CONST.SETTINGS_DO_NOT_DISTURB))

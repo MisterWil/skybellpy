@@ -4,9 +4,10 @@ Test Skybell device functionality.
 Tests the device initialization and attributes of the Skybell device class.
 """
 import datetime
-import distutils
 import json
 import unittest
+
+from distutils.util import strtobool
 
 import requests_mock
 
@@ -258,8 +259,7 @@ class TestSkybell(unittest.TestCase):
         # Change and test new values
         for value in CONST.SETTINGS_DO_NOT_DISTURB_VALUES:
             device.do_not_disturb = value
-            self.assertEqual(device.do_not_disturb,
-                             distutils.util.strtobool(value))
+            self.assertEqual(device.do_not_disturb, strtobool(value))
 
         for value in CONST.SETTINGS_OUTDOOR_CHIME_VALUES:
             device.outdoor_chime_level = value

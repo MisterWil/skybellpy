@@ -24,7 +24,6 @@ setup(
     include_package_data=True,
     install_requires=[
         'requests>=2,<3',
-        'socketIO-client3>=0.8.0',
         'colorlog==3.0.1'
     ],
     test_suite='tests',

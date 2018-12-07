@@ -129,11 +129,19 @@ class SkybellDevice(object):
         # Return the requested number
         return activities[:limit]
 
-    def latest(self, event):
+    def latest(self, event=None):
         """Return the latest event activity."""
         events = self._skybell.dev_cache(self, CONST.EVENT) or {}
+        _LOGGER.debug(events)
         # self._skybell._cache)
-        return events.get(event)
+        if event:
+            return events.get(event)
+        else:
+            latest = None
+            for type, evt in events.items():
+                if not latest or latest.get(CONST.CREATED_AT) < evt.get(CONST.CREATED_AT):
+                    latest = evt
+            return latest
 
     def _set_setting(self, settings):
         """Validate the settings and then send the PATCH request."""
@@ -184,7 +192,9 @@ class SkybellDevice(object):
     @property
     def image(self):
         """Get the most recent 'avatar' image."""
-        return self._device_json.get(CONST.AVATAR, {}).get(CONST.AVATAR_URL)
+        # avatar AWS url stopped working October 2018, switched to last activity url
+        #return self._device_json.get(CONST.AVATAR, {}).get(CONST.AVATAR_URL)
+        return self.latest().get(CONST.MEDIA_URL)
 
     @property
     def wifi_status(self):

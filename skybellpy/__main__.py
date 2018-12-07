@@ -15,6 +15,7 @@ import logging
 import argparse
 
 import skybellpy
+import skybellpy.helpers.constants as CONST
 from skybellpy.exceptions import SkybellException
 
 _LOGGER = logging.getLogger('skybellcl')
@@ -92,15 +93,27 @@ def get_arguments():
         required=False, action='append')
 
     parser.add_argument(
+        '--last-json',
+        metavar='device_id',
+        help='Output the last activity json for device_id',
+        required=False, action='append')
+
+    parser.add_argument(
+        '--last-image',
+        metavar='device_id',
+        help='Output the last activity image url for device_id',
+        required=False, action='append')
+
+    parser.add_argument(
         '--capture',
         metavar='device_id',
-        help='Trigger a new image capture for the given device_id',
+        help='NOT IMPLEMENTED Trigger a new image capture for the given device_id',
         required=False, action='append')
 
     parser.add_argument(
         '--image',
         metavar='device_id=location/image.jpg',
-        help='Save an image from a camera (if available) to the given path',
+        help='NOT IMPLEMENTED Save an image from a camera (if available) to the given path',
         required=False, action='append')
 
     parser.add_argument(
@@ -133,7 +146,7 @@ def call():
     skybell = None
 
     try:
-        # Create abodepy instance.
+        # Create skybellpy instance.
         skybell = skybellpy.Skybell(username=args.username,
                                     password=args.password,
                                     get_devices=True)
@@ -151,7 +164,7 @@ def call():
             if device:
                 # pylint: disable=protected-access
                 _LOGGER.info(device_id + " JSON:\n" +
-                             json.dumps(device._json_state, sort_keys=True,
+                             json.dumps(device._device_json, sort_keys=True,
                                         indent=4, separators=(',', ': ')))
             else:
                 _LOGGER.warning("Could not find device with id: %s", device_id)
@@ -173,6 +186,28 @@ def call():
 
                 if device:
                     _device_print(device)
+                else:
+                    _LOGGER.warning(
+                        "Could not find device with id: %s", device_id)
+
+        # Print out last motion event
+        if args.last_json:
+            for device_id in args.last_json:
+                device = skybell.get_device(device_id)
+
+                if device:
+                    _LOGGER.info(device.latest(CONST.EVENT_MOTION))
+                else:
+                    _LOGGER.warning(
+                        "Could not find device with id: %s", device_id)
+
+        # Print out last motion event
+        if args.last_image:
+            for device_id in args.last_image:
+                device = skybell.get_device(device_id)
+
+                if device:
+                    _LOGGER.info(device.image)
                 else:
                     _LOGGER.warning(
                         "Could not find device with id: %s", device_id)

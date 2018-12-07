@@ -179,7 +179,8 @@ class Skybell():
         headers['x-skybell-app-id'] = self.cache(CONST.APP_ID)
         headers['x-skybell-client-id'] = self.cache(CONST.CLIENT_ID)
 
-        _LOGGER.debug("HTTP %s %s Request with headers: %s", method, url, headers)
+        _LOGGER.debug("HTTP %s %s Request with headers: %s",
+                      method, url, headers)
 
         try:
             response = getattr(self._session, method)(

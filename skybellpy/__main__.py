@@ -107,13 +107,15 @@ def get_arguments():
     parser.add_argument(
         '--capture',
         metavar='device_id',
-        help='NOT IMPLEMENTED Trigger a new image capture for the given device_id',
+        help='NOT IMPLEMENTED: '
+             'Trigger a new image capture for the given device_id',
         required=False, action='append')
 
     parser.add_argument(
         '--image',
         metavar='device_id=location/image.jpg',
-        help='NOT IMPLEMENTED Save an image from a camera (if available) to the given path',
+        help='NOT IMPLEMENTED: '
+             'Save an image from a camera (if available) to the given path',
         required=False, action='append')
 
     parser.add_argument(

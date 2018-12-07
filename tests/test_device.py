@@ -56,13 +56,21 @@ class TestSkybell(unittest.TestCase):
         settings_url = str.replace(CONST.DEVICE_SETTINGS_URL,
                                    '$DEVID$', DEVICE.DEVID)
 
+        activities_text = '[' + \
+                          DEVICE_ACTIVITIES.get_response_ok(
+                              dev_id=DEVICE.DEVID,
+                              event=CONST.EVENT_BUTTON) + ',' + \
+                          DEVICE_ACTIVITIES.get_response_ok(
+                              dev_id=DEVICE.DEVID,
+                              event=CONST.EVENT_MOTION) + ']'
+        activities_json = json.loads(activities_text)
         activities_url = str.replace(CONST.DEVICE_ACTIVITIES_URL,
                                      '$DEVID$', DEVICE.DEVID)
 
         m.get(CONST.DEVICES_URL, text=device_text)
         m.get(info_url, text=info_text)
         m.get(settings_url, text=settings_text)
-        m.get(activities_url, text=DEVICE_ACTIVITIES.EMPTY_ACTIVITIES_RESPONSE)
+        m.get(activities_url, text=activities_text)
 
         # Logout to reset everything
         self.skybell.logout()
@@ -84,8 +92,11 @@ class TestSkybell(unittest.TestCase):
                          device_json[0][CONST.LOCATION][CONST.LOCATION_LAT])
         self.assertEqual(device.location[1],
                          device_json[0][CONST.LOCATION][CONST.LOCATION_LNG])
+        # device image replaced with last activity
+        # self.assertEqual(device.image,
+        #                  device_json[0][CONST.AVATAR][CONST.AVATAR_URL])
         self.assertEqual(device.image,
-                         device_json[0][CONST.AVATAR][CONST.AVATAR_URL])
+                         activities_json[0][CONST.MEDIA_URL])
 
         # Test Info Details
         self.assertEqual(device.wifi_status,

@@ -2,8 +2,8 @@
 import os
 
 MAJOR_VERSION = 0
-MINOR_VERSION = 1
-PATCH_VERSION = '2'
+MINOR_VERSION = 2
+PATCH_VERSION = '0'
 
 __version__ = '{}.{}.{}'.format(MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION)
 
@@ -42,6 +42,7 @@ CACHE_PATH = './skybell.pickle'
 
 # URLS
 BASE_URL = 'https://cloud.myskybell.com/api/v3/'
+BASE_URL_V4 = 'https://cloud.myskybell.com/api/v4/'
 
 LOGIN_URL = BASE_URL + 'login/'
 LOGOUT_URL = BASE_URL + 'logout/'
@@ -55,8 +56,8 @@ DEVICE_AVATAR_URL = DEVICE_URL + 'avatar/'
 DEVICE_INFO_URL = DEVICE_URL + 'info/'
 DEVICE_SETTINGS_URL = DEVICE_URL + 'settings/'
 
-SUBSCRIPTIONS_URL = BASE_URL + 'subscriptions/?include=owner'
-SUBSCRIPTION_URL = BASE_URL + 'subscriptions/$SUBSCRIPTIONID$/'
+SUBSCRIPTIONS_URL = BASE_URL + 'subscriptions?include=device,owner'
+SUBSCRIPTION_URL = BASE_URL + 'subscriptions/$SUBSCRIPTIONID$'
 SUBSCRIPTION_INFO_URL = SUBSCRIPTION_URL + '/info/'
 SUBSCRIPTION_SETTINGS_URL = SUBSCRIPTION_URL + '/settings/'
 
@@ -78,6 +79,7 @@ LOCATION_LAT = 'lat'
 LOCATION_LNG = 'lng'
 AVATAR = 'avatar'
 AVATAR_URL = 'url'
+MEDIA_URL = 'media'
 
 # DEVICE INFO
 WIFI_LINK = 'wifiLink'

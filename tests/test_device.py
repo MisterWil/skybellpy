@@ -16,6 +16,7 @@ import skybellpy.helpers.constants as CONST
 
 import tests.mock.login as LOGIN
 import tests.mock.device as DEVICE
+import tests.mock.device_avatar as DEVICE_AVATAR
 import tests.mock.device_info as DEVICE_INFO
 import tests.mock.device_settings as DEVICE_SETTINGS
 import tests.mock.device_activities as DEVICE_ACTIVITIES
@@ -46,6 +47,11 @@ class TestSkybell(unittest.TestCase):
         device_text = '[' + DEVICE.get_response_ok() + ']'
         device_json = json.loads(device_text)
 
+        avatar_text = DEVICE_AVATAR.get_response_ok()
+        avatar_json = json.loads(avatar_text)
+        avatar_url = str.replace(CONST.DEVICE_AVATAR_URL,
+                                 '$DEVID$', DEVICE.DEVID)
+
         info_text = DEVICE_INFO.get_response_ok()
         info_json = json.loads(info_text)
         info_url = str.replace(CONST.DEVICE_INFO_URL,
@@ -68,6 +74,7 @@ class TestSkybell(unittest.TestCase):
                                      '$DEVID$', DEVICE.DEVID)
 
         m.get(CONST.DEVICES_URL, text=device_text)
+        m.get(avatar_url, text=avatar_text)
         m.get(info_url, text=info_text)
         m.get(settings_url, text=settings_text)
         m.get(activities_url, text=activities_text)
@@ -92,10 +99,9 @@ class TestSkybell(unittest.TestCase):
                          device_json[0][CONST.LOCATION][CONST.LOCATION_LAT])
         self.assertEqual(device.location[1],
                          device_json[0][CONST.LOCATION][CONST.LOCATION_LNG])
-        # device image replaced with last activity
-        # self.assertEqual(device.image,
-        #                  device_json[0][CONST.AVATAR][CONST.AVATAR_URL])
         self.assertEqual(device.image,
+                         avatar_json[CONST.AVATAR_URL])
+        self.assertEqual(device.activity_image,
                          activities_json[0][CONST.MEDIA_URL])
 
         # Test Info Details
@@ -135,6 +141,10 @@ class TestSkybell(unittest.TestCase):
         device_name = 'Shut The Back Door'
         device_text = '[' + DEVICE.get_response_ok(name=device_name) + ']'
 
+        avatar_text = DEVICE_AVATAR.get_response_ok()
+        avatar_url = str.replace(CONST.DEVICE_AVATAR_URL,
+                                 '$DEVID$', DEVICE.DEVID)
+
         device_ssid = 'Super SSID64'
         device_wifi_status = 'good'
         info_text = DEVICE_INFO.get_response_ok(
@@ -163,6 +173,7 @@ class TestSkybell(unittest.TestCase):
                                      '$DEVID$', DEVICE.DEVID)
 
         m.get(CONST.DEVICES_URL, text=device_text)
+        m.get(avatar_url, text=avatar_text)
         m.get(info_url, text=info_text)
         m.get(settings_url, text=settings_text)
         m.get(activities_url, text=DEVICE_ACTIVITIES.EMPTY_ACTIVITIES_RESPONSE)
@@ -193,6 +204,10 @@ class TestSkybell(unittest.TestCase):
         device_text = DEVICE.get_response_ok(name=device_name)
         device_url = str.replace(CONST.DEVICE_URL, '$DEVID$', DEVICE.DEVID)
 
+        avatar_text = DEVICE_AVATAR.get_response_ok()
+        avatar_url = str.replace(CONST.DEVICE_AVATAR_URL,
+                                 '$DEVID$', DEVICE.DEVID)
+
         device_ssid = 'Gamecube'
         device_wifi_status = 'bad'
         info_text = DEVICE_INFO.get_response_ok(
@@ -215,6 +230,7 @@ class TestSkybell(unittest.TestCase):
             led_intensity)
 
         m.get(device_url, text=device_text)
+        m.get(avatar_url, text=avatar_text)
         m.get(info_url, text=info_text)
         m.get(settings_url, text=settings_text)
 
@@ -244,6 +260,11 @@ class TestSkybell(unittest.TestCase):
 
         # Set up device
         device_text = '[' + DEVICE.get_response_ok() + ']'
+
+        avatar_text = DEVICE_AVATAR.get_response_ok()
+        avatar_url = str.replace(CONST.DEVICE_AVATAR_URL,
+                                 '$DEVID$', DEVICE.DEVID)
+
         info_text = DEVICE_INFO.get_response_ok()
         info_url = str.replace(CONST.DEVICE_INFO_URL, '$DEVID$', DEVICE.DEVID)
 
@@ -254,6 +275,7 @@ class TestSkybell(unittest.TestCase):
                                      '$DEVID$', DEVICE.DEVID)
 
         m.get(CONST.DEVICES_URL, text=device_text)
+        m.get(avatar_url, text=avatar_text)
         m.get(info_url, text=info_text)
         m.get(settings_url, text=settings_text)
         m.get(activities_url, text=DEVICE_ACTIVITIES.EMPTY_ACTIVITIES_RESPONSE)
@@ -304,6 +326,11 @@ class TestSkybell(unittest.TestCase):
 
         # Set up device
         device_text = '[' + DEVICE.get_response_ok() + ']'
+
+        avatar_text = DEVICE_AVATAR.get_response_ok()
+        avatar_url = str.replace(CONST.DEVICE_AVATAR_URL,
+                                 '$DEVID$', DEVICE.DEVID)
+
         info_text = DEVICE_INFO.get_response_ok()
         info_url = str.replace(CONST.DEVICE_INFO_URL, '$DEVID$', DEVICE.DEVID)
 
@@ -314,6 +341,7 @@ class TestSkybell(unittest.TestCase):
                                      '$DEVID$', DEVICE.DEVID)
 
         m.get(CONST.DEVICES_URL, text=device_text)
+        m.get(avatar_url, text=avatar_text)
         m.get(info_url, text=info_text)
         m.get(settings_url, text=settings_text)
         m.get(activities_url, text=DEVICE_ACTIVITIES.EMPTY_ACTIVITIES_RESPONSE)
@@ -378,6 +406,11 @@ class TestSkybell(unittest.TestCase):
 
         # Set up device
         device_text = '[' + DEVICE.get_response_ok() + ']'
+
+        avatar_text = DEVICE_AVATAR.get_response_ok()
+        avatar_url = str.replace(CONST.DEVICE_AVATAR_URL,
+                                 '$DEVID$', DEVICE.DEVID)
+
         info_text = DEVICE_INFO.get_response_ok()
         info_url = str.replace(CONST.DEVICE_INFO_URL, '$DEVID$', DEVICE.DEVID)
 
@@ -389,6 +422,7 @@ class TestSkybell(unittest.TestCase):
                                      '$DEVID$', DEVICE.DEVID)
 
         m.get(CONST.DEVICES_URL, text=device_text)
+        m.get(avatar_url, text=avatar_text)
         m.get(info_url, text=info_text)
         m.get(settings_url, text=settings_text)
         m.get(activities_url, text=DEVICE_ACTIVITIES.EMPTY_ACTIVITIES_RESPONSE)
@@ -414,6 +448,11 @@ class TestSkybell(unittest.TestCase):
 
         # Set up device
         device_text = '[' + DEVICE.get_response_ok() + ']'
+
+        avatar_text = DEVICE_AVATAR.get_response_ok()
+        avatar_url = str.replace(CONST.DEVICE_AVATAR_URL,
+                                 '$DEVID$', DEVICE.DEVID)
+
         info_text = DEVICE_INFO.get_response_ok()
         info_url = str.replace(CONST.DEVICE_INFO_URL, '$DEVID$', DEVICE.DEVID)
 
@@ -422,21 +461,22 @@ class TestSkybell(unittest.TestCase):
                                    '$DEVID$', DEVICE.DEVID)
 
         activities_text = '[' + \
-            DEVICE_ACTIVITIES.get_response_ok(
-                dev_id=DEVICE.DEVID,
-                event=CONST.EVENT_BUTTON) + ',' + \
-            DEVICE_ACTIVITIES.get_response_ok(
-                dev_id=DEVICE.DEVID,
-                event=CONST.EVENT_MOTION) + ',' + \
-            DEVICE_ACTIVITIES.get_response_ok(
-                dev_id=DEVICE.DEVID,
-                event=CONST.EVENT_ON_DEMAND) + ']'
+                          DEVICE_ACTIVITIES.get_response_ok(
+                              dev_id=DEVICE.DEVID,
+                              event=CONST.EVENT_BUTTON) + ',' + \
+                          DEVICE_ACTIVITIES.get_response_ok(
+                              dev_id=DEVICE.DEVID,
+                              event=CONST.EVENT_MOTION) + ',' + \
+                          DEVICE_ACTIVITIES.get_response_ok(
+                              dev_id=DEVICE.DEVID,
+                              event=CONST.EVENT_ON_DEMAND) + ']'
         activities_json = json.loads(activities_text)
 
         activities_url = str.replace(CONST.DEVICE_ACTIVITIES_URL,
                                      '$DEVID$', DEVICE.DEVID)
 
         m.get(CONST.DEVICES_URL, text=device_text)
+        m.get(avatar_url, text=avatar_text)
         m.get(info_url, text=info_text)
         m.get(settings_url, text=settings_text)
         m.get(activities_url, text=activities_text)
@@ -468,6 +508,11 @@ class TestSkybell(unittest.TestCase):
 
         # Set up device
         device_text = '[' + DEVICE.get_response_ok() + ']'
+
+        avatar_text = DEVICE_AVATAR.get_response_ok()
+        avatar_url = str.replace(CONST.DEVICE_AVATAR_URL,
+                                 '$DEVID$', DEVICE.DEVID)
+
         info_text = DEVICE_INFO.get_response_ok()
         info_url = str.replace(CONST.DEVICE_INFO_URL, '$DEVID$', DEVICE.DEVID)
 
@@ -483,6 +528,7 @@ class TestSkybell(unittest.TestCase):
                                      '$DEVID$', DEVICE.DEVID)
 
         m.get(CONST.DEVICES_URL, text=device_text)
+        m.get(avatar_url, text=avatar_text)
         m.get(info_url, text=info_text)
         m.get(settings_url, text=settings_text)
         m.get(activities_url, text=activities_text)
@@ -515,6 +561,11 @@ class TestSkybell(unittest.TestCase):
 
         # Set up device
         device_text = '[' + DEVICE.get_response_ok() + ']'
+
+        avatar_text = DEVICE_AVATAR.get_response_ok()
+        avatar_url = str.replace(CONST.DEVICE_AVATAR_URL,
+                                 '$DEVID$', DEVICE.DEVID)
+
         info_text = DEVICE_INFO.get_response_ok()
         info_url = str.replace(CONST.DEVICE_INFO_URL, '$DEVID$', DEVICE.DEVID)
 
@@ -540,6 +591,7 @@ class TestSkybell(unittest.TestCase):
                                      '$DEVID$', DEVICE.DEVID)
 
         m.get(CONST.DEVICES_URL, text=device_text)
+        m.get(avatar_url, text=avatar_text)
         m.get(info_url, text=info_text)
         m.get(settings_url, text=settings_text)
         m.get(activities_url, text=activities_text)
@@ -568,6 +620,10 @@ class TestSkybell(unittest.TestCase):
         device_text = '[' + device + ']'
         device_url = str.replace(CONST.DEVICE_URL, '$DEVID$', DEVICE.DEVID)
 
+        avatar_text = DEVICE_AVATAR.get_response_ok()
+        avatar_url = str.replace(CONST.DEVICE_AVATAR_URL,
+                                 '$DEVID$', DEVICE.DEVID)
+
         info_text = DEVICE_INFO.get_response_ok()
         info_url = str.replace(CONST.DEVICE_INFO_URL, '$DEVID$', DEVICE.DEVID)
 
@@ -585,6 +641,7 @@ class TestSkybell(unittest.TestCase):
                                      '$DEVID$', DEVICE.DEVID)
 
         m.get(CONST.DEVICES_URL, text=device_text)
+        m.get(avatar_url, text=avatar_text)
         m.get(device_url, text=device)
         m.get(info_url, text=info_text)
         m.get(settings_url, text=settings_text)

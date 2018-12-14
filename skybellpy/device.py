@@ -22,6 +22,7 @@ class SkybellDevice(object):
         self._type = device_json.get(CONST.TYPE)
         self._skybell = skybell
 
+        self._avatar_json = self._avatar_request()
         self._info_json = self._info_request()
         self._settings_json = self._settings_request()
 
@@ -33,6 +34,10 @@ class SkybellDevice(object):
         new_device_json = self._device_request()
         _LOGGER.debug("Device Refresh Response: %s", new_device_json)
 
+        # Update avatar url
+        new_avatar_json = self._avatar_request()
+        _LOGGER.debug("Avatar Refresh Response: %s", new_avatar_json)
+
         # Update device detail info
         new_info_json = self._info_request()
         _LOGGER.debug("Device Info Refresh Response: %s", new_info_json)
@@ -43,13 +48,19 @@ class SkybellDevice(object):
                       new_settings_json)
 
         # Update the stored data
-        self.update(new_device_json, new_info_json, new_settings_json)
+        self.update(new_device_json, new_info_json, new_settings_json,
+                    new_avatar_json)
 
         # Update the activities
         self._update_activities()
 
     def _device_request(self):
         url = str.replace(CONST.DEVICE_URL, '$DEVID$', self.device_id)
+        response = self._skybell.send_request(method="get", url=url)
+        return json.loads(response.text)
+
+    def _avatar_request(self):
+        url = str.replace(CONST.DEVICE_AVATAR_URL, '$DEVID$', self.device_id)
         response = self._skybell.send_request(method="get", url=url)
         return json.loads(response.text)
 
@@ -71,10 +82,14 @@ class SkybellDevice(object):
         response = self._skybell.send_request(method="get", url=url)
         return json.loads(response.text)
 
-    def update(self, device_json=None, info_json=None, settings_json=None):
+    def update(self, device_json=None, info_json=None, settings_json=None,
+               avatar_json=None):
         """Update the internal device json data."""
         if device_json:
             UTILS.update(self._device_json, device_json)
+
+        if avatar_json:
+            UTILS.update(self._avatar_json, avatar_json)
 
         if info_json:
             UTILS.update(self._info_json, info_json)
@@ -193,9 +208,11 @@ class SkybellDevice(object):
     @property
     def image(self):
         """Get the most recent 'avatar' image."""
-        # avatar AWS url stopped working October 2018
-        # switched to last activity url
-        # return self._device_json.get(CONST.AVATAR, {}).get(CONST.AVATAR_URL)
+        return self._avatar_json.get(CONST.AVATAR_URL)
+
+    @property
+    def activity_image(self):
+        """Get the most recent activity image."""
         return self.latest().get(CONST.MEDIA_URL)
 
     @property

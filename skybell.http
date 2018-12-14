@@ -209,6 +209,17 @@ authorization: {{access_token}}
 
 ###
 
+// Get avatar url for a single device
+
+GET https://cloud.myskybell.com/api/v3/devices/{{device_id}}/avatar HTTP/1.1
+content-type: application/json
+user-agent: SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) com.skybell.doorbell/1
+x-skybell-app-id: {{app_id}}
+x-skybell-client-id: {{client_id}}
+authorization: {{access_token}}
+
+###
+
 // Get activities for a single device
 
 GET https://cloud.myskybell.com/api/v3/devices/{{device_id}}/activities HTTP/1.1

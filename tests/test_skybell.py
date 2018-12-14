@@ -16,6 +16,7 @@ import skybellpy.helpers.constants as CONST
 import tests.mock as MOCK
 import tests.mock.login as LOGIN
 import tests.mock.device as DEVICE
+import tests.mock.device_avatar as DEVICE_AVATAR
 import tests.mock.device_info as DEVICE_INFO
 import tests.mock.device_settings as DEVICE_SETTINGS
 import tests.mock.device_activities as DEVICE_ACTIVITIES
@@ -282,6 +283,9 @@ class TestSkybell(unittest.TestCase):
         """Check that device retrieval works."""
         dev1_devid = 'dev1'
         dev1 = DEVICE.get_response_ok(name='Dev1', dev_id=dev1_devid)
+        dev1_avatar = DEVICE_AVATAR.get_response_ok('dev1')
+        dev1_avatar_url = str.replace(CONST.DEVICE_AVATAR_URL,
+                                      '$DEVID$', dev1_devid)
         dev1_info = DEVICE_INFO.get_response_ok(dev_id=dev1_devid)
         dev1_info_url = str.replace(CONST.DEVICE_INFO_URL,
                                     '$DEVID$', dev1_devid)
@@ -293,6 +297,9 @@ class TestSkybell(unittest.TestCase):
 
         dev2_devid = 'dev2'
         dev2 = DEVICE.get_response_ok(name='Dev2', dev_id=dev2_devid)
+        dev2_avatar = DEVICE_AVATAR.get_response_ok('dev2')
+        dev2_avatar_url = str.replace(CONST.DEVICE_AVATAR_URL,
+                                      '$DEVID$', dev2_devid)
         dev2_info = DEVICE_INFO.get_response_ok(dev_id=dev1_devid)
         dev2_info_url = str.replace(CONST.DEVICE_INFO_URL,
                                     '$DEVID$', dev2_devid)
@@ -304,6 +311,8 @@ class TestSkybell(unittest.TestCase):
 
         m.post(CONST.LOGIN_URL, text=LOGIN.post_response_ok())
         m.get(CONST.DEVICES_URL, text='[' + dev1 + ',' + dev2 + ']')
+        m.get(dev1_avatar_url, text=dev1_avatar)
+        m.get(dev2_avatar_url, text=dev2_avatar)
         m.get(dev1_info_url, text=dev1_info)
         m.get(dev2_info_url, text=dev2_info)
         m.get(dev1_settings_url, text=dev1_settings)
@@ -325,6 +334,8 @@ class TestSkybell(unittest.TestCase):
         self.assertIsNotNone(dev2_dev)
         self.assertEqual(json.loads(dev1), dev1_dev._device_json)
         self.assertEqual(json.loads(dev2), dev2_dev._device_json)
+        self.assertEqual(json.loads(dev1_avatar), dev1_dev._avatar_json)
+        self.assertEqual(json.loads(dev2_avatar), dev2_dev._avatar_json)
         self.assertEqual(json.loads(dev1_info), dev1_dev._info_json)
         self.assertEqual(json.loads(dev2_info), dev2_dev._info_json)
         self.assertEqual(json.loads(dev1_settings),
@@ -337,6 +348,9 @@ class TestSkybell(unittest.TestCase):
         """Check that device refresh works and reuses the same objects."""
         dev1_devid = 'dev1'
         dev1a = DEVICE.get_response_ok(name='Dev1', dev_id=dev1_devid)
+        dev1a_avatar = DEVICE_AVATAR.get_response_ok('dev1a')
+        dev1a_avatar_url = str.replace(CONST.DEVICE_AVATAR_URL,
+                                       '$DEVID$', dev1_devid)
         dev1a_info = DEVICE_INFO.get_response_ok(dev_id=dev1_devid)
         dev1a_info_url = str.replace(CONST.DEVICE_INFO_URL,
                                      '$DEVID$', dev1_devid)
@@ -349,6 +363,9 @@ class TestSkybell(unittest.TestCase):
 
         dev2_devid = 'dev2'
         dev2a = DEVICE.get_response_ok(name='Dev2', dev_id=dev2_devid)
+        dev2a_avatar = DEVICE_AVATAR.get_response_ok('dev2a')
+        dev2a_avatar_url = str.replace(CONST.DEVICE_AVATAR_URL,
+                                       '$DEVID$', dev2_devid)
         dev2a_info = DEVICE_INFO.get_response_ok(dev_id=dev1_devid)
         dev2a_info_url = str.replace(CONST.DEVICE_INFO_URL,
                                      '$DEVID$', dev2_devid)
@@ -361,6 +378,8 @@ class TestSkybell(unittest.TestCase):
 
         m.post(CONST.LOGIN_URL, text=LOGIN.post_response_ok())
         m.get(CONST.DEVICES_URL, text='[' + dev1a + ',' + dev2a + ']')
+        m.get(dev1a_avatar_url, text=dev1a_avatar)
+        m.get(dev2a_avatar_url, text=dev2a_avatar)
         m.get(dev1a_info_url, text=dev1a_info)
         m.get(dev2a_info_url, text=dev2a_info)
         m.get(dev1a_settings_url, text=dev1a_settings)

@@ -93,13 +93,19 @@ def get_arguments():
         required=False, action='append')
 
     parser.add_argument(
-        '--last-json',
+        '--activity-json',
         metavar='device_id',
-        help='Output the last activity json for device_id',
+        help='Output the activity activity json for device_id',
         required=False, action='append')
 
     parser.add_argument(
-        '--last-image',
+        '--avatar-image',
+        metavar='device_id',
+        help='Output the avatar image url for device_id',
+        required=False, action='append')
+
+    parser.add_argument(
+        '--activity-image',
         metavar='device_id',
         help='Output the last activity image url for device_id',
         required=False, action='append')
@@ -193,8 +199,8 @@ def call():
                         "Could not find device with id: %s", device_id)
 
         # Print out last motion event
-        if args.last_json:
-            for device_id in args.last_json:
+        if args.activity_json:
+            for device_id in args.activity_json:
                 device = skybell.get_device(device_id)
 
                 if device:
@@ -203,13 +209,24 @@ def call():
                     _LOGGER.warning(
                         "Could not find device with id: %s", device_id)
 
-        # Print out last motion event
-        if args.last_image:
-            for device_id in args.last_image:
+        # Print out avatar image
+        if args.avatar_image:
+            for device_id in args.avatar_image:
                 device = skybell.get_device(device_id)
 
                 if device:
                     _LOGGER.info(device.image)
+                else:
+                    _LOGGER.warning(
+                        "Could not find device with id: %s", device_id)
+
+        # Print out last motion event image
+        if args.activity_image:
+            for device_id in args.activity_image:
+                device = skybell.get_device(device_id)
+
+                if device:
+                    _LOGGER.info(device.activity_image)
                 else:
                     _LOGGER.warning(
                         "Could not find device with id: %s", device_id)

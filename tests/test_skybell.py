@@ -279,6 +279,38 @@ class TestSkybell(unittest.TestCase):
         os.remove(cache_path)
 
     @requests_mock.mock()
+    def test_empty_cookies(self, m):
+        """Check that empty cookies file is loaded successfully."""
+        m.post(CONST.LOGIN_URL, text=LOGIN.post_response_ok())
+
+        # Test empty cookies file
+        empty_cache_path = "./test_cookies_empty.pickle"
+
+        # Remove the file if it exists
+        if os.path.exists(empty_cache_path):
+            os.remove(empty_cache_path)
+
+        # Create an empty file
+        with open(empty_cache_path, 'a'):
+            os.utime(empty_cache_path, None)
+
+        # Assert that empty cookies file exists
+        self.assertTrue(os.path.exists(empty_cache_path))
+
+        # Cookies are created
+        empty_skybell = skybellpy.Skybell(username='fizz',
+                                          password='buzz',
+                                          auto_login=False,
+                                          cache_path=empty_cache_path)
+
+        # Test that our cookies are fully realized prior to login
+        # pylint: disable=W0212
+        self.assertIsNotNone(empty_skybell._cache['app_id'])
+        self.assertIsNotNone(empty_skybell._cache['client_id'])
+        self.assertIsNotNone(empty_skybell._cache['token'])
+        self.assertIsNone(empty_skybell._cache['access_token'])
+
+    @requests_mock.mock()
     def test_get_device(self, m):
         """Check that device retrieval works."""
         dev1_devid = 'dev1'

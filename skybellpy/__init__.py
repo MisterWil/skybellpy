@@ -228,11 +228,15 @@ class Skybell():
 
     def _load_cache(self):
         """Load existing cache and merge for updating if required."""
-        if not self._disable_cache and os.path.exists(self._cache_path):
-            _LOGGER.debug("Cache found at: %s", self._cache_path)
-            loaded_cache = UTILS.load_cache(self._cache_path)
-
-            UTILS.update(self._cache, loaded_cache)
+        if not self._disable_cache:
+            if os.path.exists(self._cache_path):
+                _LOGGER.debug("Cache found at: %s", self._cache_path)
+                if os.path.getsize(self._cache_path) > 0:
+                    loaded_cache = UTILS.load_cache(self._cache_path)
+                    UTILS.update(self._cache, loaded_cache)
+                else:
+                    _LOGGER.debug("Cache file is empty.  Removing it.")
+                    os.remove(self._cache_path)
 
         self._save_cache()
 

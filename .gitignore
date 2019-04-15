@@ -44,6 +44,7 @@ nosetests.xml
 coverage.xml
 *,cover
 .hypothesis/
+.pytest_cache/
 
 # Translations
 *.mo
@@ -97,3 +98,6 @@ ENV/
 
 # pycharm IDE settings
 .idea/
+
+# vscode
+.vscode/

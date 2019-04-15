@@ -62,6 +62,10 @@ Checkout from github and then create a virtual environment::
 Activate the virtual environment::
 
     $ source venv/bin/activate
+
+Install requirements::
+
+    $ pip install -r requirements.txt -r requirements_test.txt 
     
 Install skybellpy locally in "editable mode"::
 

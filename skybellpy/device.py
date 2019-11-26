@@ -12,7 +12,7 @@ import skybellpy.utils as UTILS
 _LOGGER = logging.getLogger(__name__)
 
 
-class SkybellDevice(object):
+class SkybellDevice():
     """Class to represent each Skybell device."""
 
     def __init__(self, device_json, skybell):
@@ -121,8 +121,8 @@ class SkybellDevice(object):
 
             if old_event and created_at < old_event.get(CONST.CREATED_AT):
                 continue
-            else:
-                events[event] = activity
+
+            events[event] = activity
 
         self._skybell.update_dev_cache(
             self,

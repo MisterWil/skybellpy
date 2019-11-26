@@ -14,6 +14,8 @@ import logging
 
 import argparse
 
+from colorlog import ColoredFormatter
+
 import skybellpy
 import skybellpy.helpers.constants as CONST
 from skybellpy.exceptions import SkybellException
@@ -35,7 +37,6 @@ def setup_logging(log_level=logging.INFO):
     logging.getLogger('aiohttp.access').setLevel(logging.WARNING)
 
     try:
-        from colorlog import ColoredFormatter
         logging.getLogger().handlers[0].setFormatter(ColoredFormatter(
             colorfmt,
             datefmt=datefmt,

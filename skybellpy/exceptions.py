@@ -17,5 +17,3 @@ class SkybellException(Exception):
 
 class SkybellAuthenticationException(SkybellException):
     """Class to throw authentication exception."""
-
-    pass

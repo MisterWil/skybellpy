@@ -158,7 +158,8 @@ def call():
         # Create skybellpy instance.
         skybell = skybellpy.Skybell(username=args.username,
                                     password=args.password,
-                                    get_devices=True)
+                                    get_devices=True,
+                                    agent_identifier='skybellcl')
 
     # # Set setting
     # for setting in args.set or []:

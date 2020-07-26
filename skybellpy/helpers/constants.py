@@ -2,7 +2,7 @@
 import os
 
 MAJOR_VERSION = 0
-MINOR_VERSION = 5
+MINOR_VERSION = 6
 PATCH_VERSION = '0'
 
 __version__ = '{}.{}.{}'.format(MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION)
@@ -39,6 +39,12 @@ PROJECT_GITHUB_REPOSITORY = 'skybellpy'
 PYPI_URL = 'https://pypi.python.org/pypi/{}'.format(PROJECT_PACKAGE_NAME)
 
 CACHE_PATH = './skybell.pickle'
+
+USER_AGENT = 'skybellpy/{}.{}.{}'.format(MAJOR_VERSION,
+                                         MINOR_VERSION,
+                                         PATCH_VERSION)
+
+DEFAULT_AGENT_IDENTIFIER = 'default'
 
 # URLS
 BASE_URL = 'https://cloud.myskybell.com/api/v3/'

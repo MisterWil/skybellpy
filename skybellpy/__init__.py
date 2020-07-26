@@ -34,7 +34,8 @@ class Skybell():
 
     def __init__(self, username=None, password=None,
                  auto_login=False, get_devices=False,
-                 cache_path=CONST.CACHE_PATH, disable_cache=False):
+                 cache_path=CONST.CACHE_PATH, disable_cache=False,
+                 agent_identifier=CONST.DEFAULT_AGENT_IDENTIFIER):
         """Init Abode object."""
         self._username = username
         self._password = password
@@ -43,6 +44,7 @@ class Skybell():
         self._disable_cache = disable_cache
         self._devices = None
         self._session = requests.session()
+        self._user_agent = '{} ({})'.format(CONST.USER_AGENT, agent_identifier)
 
         # Create a new cache template
         self._cache = {
@@ -171,9 +173,9 @@ class Skybell():
             headers['Authorization'] = 'Bearer ' + \
                 self.cache(CONST.ACCESS_TOKEN)
 
-        headers['user-agent'] = (
-            'SkyBell/3.4.1 (iPhone9,2; iOS 11.0; loc=en_US; lang=en-US) '
-            'com.skybell.doorbell/1')
+        _LOGGER.info("User-Agent: %s", self._user_agent)
+
+        headers['user-agent'] = self._user_agent
         headers['content-type'] = 'application/json'
         headers['accepts'] = '*/*'
         headers['x-skybell-app-id'] = self.cache(CONST.APP_ID)

@@ -30,10 +30,11 @@ class TestSkybell(unittest.TestCase):
 
     def setUp(self):
         """Set up Skybell module."""
-        self.skybell_no_cred = skybellpy.Skybell()
+        self.skybell_no_cred = skybellpy.Skybell(login_sleep=False)
         self.skybell = skybellpy.Skybell(username=USERNAME,
                                          password=PASSWORD,
-                                         disable_cache=True)
+                                         disable_cache=True,
+                                         login_sleep=False)
 
     def tearDown(self):
         """Clean up after test."""
@@ -81,7 +82,8 @@ class TestSkybell(unittest.TestCase):
                                     password='buzz',
                                     auto_login=True,
                                     get_devices=False,
-                                    disable_cache=True)
+                                    disable_cache=True,
+                                    login_sleep=False)
 
         # pylint: disable=W0212
         self.assertEqual(skybell._username, 'fizz')
@@ -105,7 +107,8 @@ class TestSkybell(unittest.TestCase):
         skybell = skybellpy.Skybell(username='fizz',
                                     password='buzz',
                                     get_devices=True,
-                                    disable_cache=True)
+                                    disable_cache=True,
+                                    login_sleep=False)
 
         # pylint: disable=W0212
         self.assertEqual(skybell._username, 'fizz')
@@ -231,7 +234,8 @@ class TestSkybell(unittest.TestCase):
         skybell = skybellpy.Skybell(username='fizz',
                                     password='buzz',
                                     auto_login=False,
-                                    cache_path=cache_path)
+                                    cache_path=cache_path,
+                                    login_sleep=False)
 
         # Test that our cookies are fully realized prior to login
         # pylint: disable=W0212
@@ -265,7 +269,8 @@ class TestSkybell(unittest.TestCase):
         skybell = skybellpy.Skybell(username='fizz',
                                     password='buzz',
                                     auto_login=False,
-                                    cache_path=cache_path)
+                                    cache_path=cache_path,
+                                    login_sleep=False)
 
         # Test that the cookie data is the same
         self.assertEqual(skybell._cache['app_id'],
@@ -301,7 +306,8 @@ class TestSkybell(unittest.TestCase):
         empty_skybell = skybellpy.Skybell(username='fizz',
                                           password='buzz',
                                           auto_login=False,
-                                          cache_path=empty_cache_path)
+                                          cache_path=empty_cache_path,
+                                          login_sleep=False)
 
         # Test that our cookies are fully realized prior to login
         # pylint: disable=W0212

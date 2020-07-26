@@ -32,7 +32,8 @@ class TestSkybell(unittest.TestCase):
         """Set up Skybell module."""
         self.skybell = skybellpy.Skybell(username=USERNAME,
                                          password=PASSWORD,
-                                         disable_cache=True)
+                                         disable_cache=True,
+                                         login_sleep=False)
 
     def tearDown(self):
         """Clean up after test."""

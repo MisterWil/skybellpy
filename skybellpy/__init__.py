@@ -16,6 +16,7 @@ www.skybell.com for more information. I am in no way affiliated with Skybell.
 import os.path
 import json
 import logging
+import time
 import requests
 from requests.exceptions import RequestException
 
@@ -35,7 +36,8 @@ class Skybell():
     def __init__(self, username=None, password=None,
                  auto_login=False, get_devices=False,
                  cache_path=CONST.CACHE_PATH, disable_cache=False,
-                 agent_identifier=CONST.DEFAULT_AGENT_IDENTIFIER):
+                 agent_identifier=CONST.DEFAULT_AGENT_IDENTIFIER,
+                 login_sleep=True):
         """Init Abode object."""
         self._username = username
         self._password = password
@@ -45,6 +47,7 @@ class Skybell():
         self._devices = None
         self._session = requests.session()
         self._user_agent = '{} ({})'.format(CONST.USER_AGENT, agent_identifier)
+        self._login_sleep = login_sleep
 
         # Create a new cache template
         self._cache = {
@@ -67,7 +70,7 @@ class Skybell():
         if get_devices:
             self.get_devices()
 
-    def login(self, username=None, password=None):
+    def login(self, username=None, password=None, sleep=False):
         """Execute Skybell login."""
         if username is not None:
             self._username = username
@@ -84,6 +87,8 @@ class Skybell():
             {
                 CONST.ACCESS_TOKEN: None
             })
+
+        self._session = requests.session()
 
         login_data = {
             'username': self._username,
@@ -105,7 +110,11 @@ class Skybell():
         self.update_cache({
             CONST.ACCESS_TOKEN: response_object[CONST.ACCESS_TOKEN]})
 
-        _LOGGER.info("Login successful")
+        if self._login_sleep:
+            _LOGGER.info("Login successful, waiting 5 seconds...")
+            time.sleep(5)
+        else:
+            _LOGGER.info("Login successful")
 
         return True
 
@@ -172,8 +181,6 @@ class Skybell():
         if self.cache(CONST.ACCESS_TOKEN):
             headers['Authorization'] = 'Bearer ' + \
                 self.cache(CONST.ACCESS_TOKEN)
-
-        _LOGGER.info("User-Agent: %s", self._user_agent)
 
         headers['user-agent'] = self._user_agent
         headers['content-type'] = 'application/json'

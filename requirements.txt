@@ -1,2 +1,2 @@
 requests>=2.12.4
-colorlog==3.0.1
+colorlog>=3.0.1

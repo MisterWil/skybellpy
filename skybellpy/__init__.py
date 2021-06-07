@@ -13,31 +13,36 @@ Published under the MIT license - See LICENSE file for more details.
 "Skybell" is a trademark owned by SkyBell Technologies, Inc, see
 www.skybell.com for more information. I am in no way affiliated with Skybell.
 """
-import os.path
 import json
 import logging
+import os.path
 import time
+
 import requests
 from requests.exceptions import RequestException
 
-from skybellpy.device import SkybellDevice
-from skybellpy.exceptions import (
-    SkybellAuthenticationException, SkybellException)
-import skybellpy.helpers.constants as CONST
-import skybellpy.helpers.errors as ERROR
-import skybellpy.utils as UTILS
+from . import utils as UTILS
+from .device import SkybellDevice
+from .exceptions import SkybellAuthenticationException, SkybellException
+from .helpers import constants as CONST, errors as ERROR
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class Skybell():
+class Skybell:
     """Main Skybell class."""
 
-    def __init__(self, username=None, password=None,
-                 auto_login=False, get_devices=False,
-                 cache_path=CONST.CACHE_PATH, disable_cache=False,
-                 agent_identifier=CONST.DEFAULT_AGENT_IDENTIFIER,
-                 login_sleep=True):
+    def __init__(
+        self,
+        username=None,
+        password=None,
+        auto_login=False,
+        get_devices=False,
+        cache_path=CONST.CACHE_PATH,
+        disable_cache=False,
+        agent_identifier=CONST.DEFAULT_AGENT_IDENTIFIER,
+        login_sleep=True,
+    ):
         """Init Abode object."""
         self._username = username
         self._password = password
@@ -46,7 +51,7 @@ class Skybell():
         self._disable_cache = disable_cache
         self._devices = None
         self._session = requests.session()
-        self._user_agent = '{} ({})'.format(CONST.USER_AGENT, agent_identifier)
+        self._user_agent = "{} ({})".format(CONST.USER_AGENT, agent_identifier)
         self._login_sleep = login_sleep
 
         # Create a new cache template
@@ -55,16 +60,14 @@ class Skybell():
             CONST.CLIENT_ID: UTILS.gen_id(),
             CONST.TOKEN: UTILS.gen_token(),
             CONST.ACCESS_TOKEN: None,
-            CONST.DEVICES: {}
+            CONST.DEVICES: {},
         }
 
         # Load and merge an existing cache
         if not disable_cache:
             self._load_cache()
 
-        if (self._username is not None and
-                self._password is not None and
-                auto_login):
+        if self._username is not None and self._password is not None and auto_login:
             self.login()
 
         if get_devices:
@@ -83,35 +86,32 @@ class Skybell():
         if self._password is None or not isinstance(self._password, str):
             raise SkybellAuthenticationException(ERROR.PASSWORD)
 
-        self.update_cache(
-            {
-                CONST.ACCESS_TOKEN: None
-            })
+        self.update_cache({CONST.ACCESS_TOKEN: None})
 
         self._session = requests.session()
 
         login_data = {
-            'username': self._username,
-            'password': self._password,
-            'appId': self.cache(CONST.APP_ID),
-            CONST.TOKEN: self.cache(CONST.TOKEN)
+            "username": self._username,
+            "password": self._password,
+            "appId": self.cache(CONST.APP_ID),
+            CONST.TOKEN: self.cache(CONST.TOKEN),
         }
 
         try:
-            response = self.send_request('post', CONST.LOGIN_URL,
-                                         json_data=login_data, retry=False)
+            response = self.send_request(
+                "post", CONST.LOGIN_URL, json_data=login_data, retry=False
+            )
         except Exception as exc:
-            raise SkybellAuthenticationException(ERROR.LOGIN_FAILED, exc)
+            raise SkybellAuthenticationException(ERROR.LOGIN_FAILED, exc) from exc
 
         _LOGGER.debug("Login Response: %s", response.text)
 
         response_object = json.loads(response.text)
 
-        self.update_cache({
-            CONST.ACCESS_TOKEN: response_object[CONST.ACCESS_TOKEN]})
+        self.update_cache({CONST.ACCESS_TOKEN: response_object[CONST.ACCESS_TOKEN]})
 
         if self._login_sleep:
-            _LOGGER.info("Login successful, waiting 5 seconds...")
+            _LOGGER.info("Login successful, waiting 5 seconds... ")
             time.sleep(5)
         else:
             _LOGGER.info("Login successful")
@@ -137,7 +137,7 @@ class Skybell():
             if self._devices is None:
                 self._devices = {}
 
-            _LOGGER.info("Updating all devices...")
+            _LOGGER.info("Updating all devices... ")
             response = self.send_request("get", CONST.DEVICES_URL)
             response_object = json.loads(response.text)
 
@@ -145,7 +145,7 @@ class Skybell():
 
             for device_json in response_object:
                 # Attempt to reuse an existing device
-                device = self._devices.get(device_json['id'])
+                device = self._devices.get(device_json["id"])
 
                 # No existing device, create a new one
                 if device:
@@ -169,8 +169,7 @@ class Skybell():
 
         return device
 
-    def send_request(self, method, url, headers=None,
-                     json_data=None, retry=True):
+    def send_request(self, method, url, headers=None, json_data=None, retry=True):
         """Send requests to Skybell."""
         if not self.cache(CONST.ACCESS_TOKEN) and url != CONST.LOGIN_URL:
             self.login()
@@ -179,21 +178,20 @@ class Skybell():
             headers = {}
 
         if self.cache(CONST.ACCESS_TOKEN):
-            headers['Authorization'] = 'Bearer ' + \
-                self.cache(CONST.ACCESS_TOKEN)
+            headers["Authorization"] = "Bearer " + self.cache(CONST.ACCESS_TOKEN)
 
-        headers['user-agent'] = self._user_agent
-        headers['content-type'] = 'application/json'
-        headers['accepts'] = '*/*'
-        headers['x-skybell-app-id'] = self.cache(CONST.APP_ID)
-        headers['x-skybell-client-id'] = self.cache(CONST.CLIENT_ID)
+        headers["user-agent"] = self._user_agent
+        headers["content-type"] = "application/json"
+        headers["accepts"] = "*/*"
+        headers["x-skybell-app-id"] = self.cache(CONST.APP_ID)
+        headers["x-skybell-client-id"] = self.cache(CONST.CLIENT_ID)
 
-        _LOGGER.debug("HTTP %s %s Request with headers: %s",
-                      method, url, headers)
+        _LOGGER.debug("HTTP %s %s Request with headers: %s", method, url, headers)
 
         try:
             response = getattr(self._session, method)(
-                url, headers=headers, json=json_data)
+                url, headers=headers, json=json_data
+            )
             _LOGGER.debug("%s %s", response, response.text)
 
             if response and response.status_code < 400:
@@ -228,12 +226,7 @@ class Skybell():
 
     def update_dev_cache(self, device, data):
         """Update cached values for a device."""
-        self.update_cache(
-            {
-                CONST.DEVICES: {
-                    device.device_id: data
-                }
-            })
+        self.update_cache({CONST.DEVICES: {device.device_id: data}})
 
     def _load_cache(self):
         """Load existing cache and merge for updating if required."""
@@ -244,7 +237,7 @@ class Skybell():
                     loaded_cache = UTILS.load_cache(self._cache_path)
                     UTILS.update(self._cache, loaded_cache)
                 else:
-                    _LOGGER.debug("Cache file is empty.  Removing it.")
+                    _LOGGER.debug("Cache file is empty.  Removing it")
                     os.remove(self._cache_path)
 
         self._save_cache()

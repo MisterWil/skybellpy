@@ -7,8 +7,9 @@ class SkybellException(Exception):
     def __init__(self, error, details=None):
         """Initialize SkybellException."""
         # Call the base class constructor with the parameters it needs
-        super(SkybellException, self).__init__(
-            '{}: {}'.format(error[1], details))
+        super(SkybellException, self).__init__(  # pylint:disable=super-with-arguments
+            "{}: {}".format(error[1], details)
+        )
 
         self.errcode = error[0]
         self.message = error[1]

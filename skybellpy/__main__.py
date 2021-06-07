@@ -9,50 +9,49 @@ Published under the MIT license - See LICENSE file for more details.
 "Skybell" is a trademark owned by SkyBell Technologies, Inc, see
 www.skybell.com for more information. I am in no way affiliated with Skybell.
 """
+import argparse
 import json
 import logging
 
-import argparse
-
 from colorlog import ColoredFormatter
-
 import skybellpy
-import skybellpy.helpers.constants as CONST
-from skybellpy.exceptions import SkybellException
+from .exceptions import SkybellException
+from .helpers import constants as CONST
 
-_LOGGER = logging.getLogger('skybellcl')
+_LOGGER = logging.getLogger("skybellcl")
 
 
 def setup_logging(log_level=logging.INFO):
     """Set up the logging."""
     logging.basicConfig(level=log_level)
-    fmt = ("%(asctime)s %(levelname)s (%(threadName)s) "
-           "[%(name)s] %(message)s")
+    fmt = "%(asctime)s %(levelname)s (%(threadName)s) " "[%(name)s] %(message)s"
     colorfmt = "%(log_color)s{}%(reset)s".format(fmt)
-    datefmt = '%Y-%m-%d %H:%M:%S'
+    datefmt = "%Y-%m-%d %H:%M:%S"
 
     # Suppress overly verbose logs from libraries that aren't helpful
-    logging.getLogger('requests').setLevel(logging.WARNING)
-    logging.getLogger('urllib3').setLevel(logging.WARNING)
-    logging.getLogger('aiohttp.access').setLevel(logging.WARNING)
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("aiohttp.access").setLevel(logging.WARNING)
 
     try:
-        logging.getLogger().handlers[0].setFormatter(ColoredFormatter(
-            colorfmt,
-            datefmt=datefmt,
-            reset=True,
-            log_colors={
-                'DEBUG': 'cyan',
-                'INFO': 'green',
-                'WARNING': 'yellow',
-                'ERROR': 'red',
-                'CRITICAL': 'red',
-            }
-        ))
+        logging.getLogger().handlers[0].setFormatter(
+            ColoredFormatter(
+                colorfmt,
+                datefmt=datefmt,
+                reset=True,
+                log_colors={
+                    "DEBUG": "cyan",
+                    "INFO": "green",
+                    "WARNING": "yellow",
+                    "ERROR": "red",
+                    "CRITICAL": "red",
+                },
+            )
+        )
     except ImportError:
         pass
 
-    logger = logging.getLogger('')
+    logger = logging.getLogger("")
     logger.setLevel(log_level)
 
 
@@ -60,80 +59,98 @@ def get_arguments():
     """Get parsed arguments."""
     parser = argparse.ArgumentParser("SkybellPy: Command Line Utility")
 
-    parser.add_argument(
-        '-u', '--username',
-        help='Username',
-        required=True)
+    parser.add_argument("-u", "--username", help="Username", required=True)
+
+    parser.add_argument("-p", "--password", help="Password", required=True)
 
     parser.add_argument(
-        '-p', '--password',
-        help='Password',
-        required=True)
+        "--set",
+        metavar="setting=value",
+        help="Set setting to a value",
+        required=False,
+        action="append",
+    )
 
     parser.add_argument(
-        '--set',
-        metavar='setting=value',
-        help='Set setting to a value',
-        required=False, action='append')
+        "--devices",
+        help="Output all devices",
+        required=False,
+        default=False,
+        action="store_true",
+    )
 
     parser.add_argument(
-        '--devices',
-        help='Output all devices',
-        required=False, default=False, action="store_true")
+        "--device",
+        metavar="device_id",
+        help="Output one device for device_id",
+        required=False,
+        action="append",
+    )
 
     parser.add_argument(
-        '--device',
-        metavar='device_id',
-        help='Output one device for device_id',
-        required=False, action='append')
+        "--json",
+        metavar="device_id",
+        help="Output the json for device_id",
+        required=False,
+        action="append",
+    )
 
     parser.add_argument(
-        '--json',
-        metavar='device_id',
-        help='Output the json for device_id',
-        required=False, action='append')
+        "--activity-json",
+        metavar="device_id",
+        help="Output the activity activity json for device_id",
+        required=False,
+        action="append",
+    )
 
     parser.add_argument(
-        '--activity-json',
-        metavar='device_id',
-        help='Output the activity activity json for device_id',
-        required=False, action='append')
+        "--avatar-image",
+        metavar="device_id",
+        help="Output the avatar image url for device_id",
+        required=False,
+        action="append",
+    )
 
     parser.add_argument(
-        '--avatar-image',
-        metavar='device_id',
-        help='Output the avatar image url for device_id',
-        required=False, action='append')
+        "--activity-image",
+        metavar="device_id",
+        help="Output the last activity image url for device_id",
+        required=False,
+        action="append",
+    )
 
     parser.add_argument(
-        '--activity-image',
-        metavar='device_id',
-        help='Output the last activity image url for device_id',
-        required=False, action='append')
+        "--capture",
+        metavar="device_id",
+        help="NOT IMPLEMENTED: " "Trigger a new image capture for the given device_id",
+        required=False,
+        action="append",
+    )
 
     parser.add_argument(
-        '--capture',
-        metavar='device_id',
-        help='NOT IMPLEMENTED: '
-             'Trigger a new image capture for the given device_id',
-        required=False, action='append')
+        "--image",
+        metavar="device_id=location/image.jpg",
+        help="NOT IMPLEMENTED: "
+        "Save an image from a camera (if available) to the given path",
+        required=False,
+        action="append",
+    )
 
     parser.add_argument(
-        '--image',
-        metavar='device_id=location/image.jpg',
-        help='NOT IMPLEMENTED: '
-             'Save an image from a camera (if available) to the given path',
-        required=False, action='append')
+        "--debug",
+        help="Enable debug logging",
+        required=False,
+        default=False,
+        action="store_true",
+    )
 
     parser.add_argument(
-        '--debug',
-        help='Enable debug logging',
-        required=False, default=False, action="store_true")
-
-    parser.add_argument(
-        '--quiet',
-        help='Output only warnings and errors',
-        required=False, default=False, action="store_true")
+        "--quiet",
+        help="Output only warnings and errors",
+        required=False,
+        default=False,
+        action="store_true",
+    )
 
     return parser.parse_args()
 
@@ -156,16 +173,18 @@ def call():
 
     try:
         # Create skybellpy instance.
-        skybell = skybellpy.Skybell(username=args.username,
-                                    password=args.password,
-                                    get_devices=True,
-                                    agent_identifier='skybellcl')
+        skybell = skybellpy.Skybell(
+            username=args.username,
+            password=args.password,
+            get_devices=True,
+            agent_identifier="skybellcl",
+        )
 
-    # # Set setting
-    # for setting in args.set or []:
-    #     keyval = setting.split("=")
-    #     if skybell.set_setting(keyval[0], keyval[1]):
-    #         _LOGGER.info("Setting %s changed to %s", keyval[0], keyval[1])
+        # # Set setting
+        # for setting in args.set or []:
+        #     keyval = setting.split("=")
+        #     if skybell.set_setting(keyval[0], keyval[1]):
+        #         _LOGGER.info("Setting %s changed to %s", keyval[0], keyval[1])
 
         # Output Json
         for device_id in args.json or []:
@@ -173,16 +192,22 @@ def call():
 
             if device:
                 # pylint: disable=protected-access
-                _LOGGER.info(device_id + " JSON:\n" +
-                             json.dumps(device._device_json, sort_keys=True,
-                                        indent=4, separators=(',', ': ')))
+                _LOGGER.info(
+                    device_id
+                    + " JSON:\n"
+                    + json.dumps(
+                        device._device_json,
+                        sort_keys=True,
+                        indent=4,
+                        separators=(",", ": "),
+                    )
+                )
             else:
                 _LOGGER.warning("Could not find device with id: %s", device_id)
 
         # Print
-        def _device_print(dev, append=''):
-            _LOGGER.info("%s%s",
-                         dev.desc, append)
+        def _device_print(dev, append=""):
+            _LOGGER.info("%s%s", dev.desc, append)
 
         # Print out all devices.
         if args.devices:
@@ -197,8 +222,7 @@ def call():
                 if device:
                     _device_print(device)
                 else:
-                    _LOGGER.warning(
-                        "Could not find device with id: %s", device_id)
+                    _LOGGER.warning("Could not find device with id: %s", device_id)
 
         # Print out last motion event
         if args.activity_json:
@@ -208,8 +232,7 @@ def call():
                 if device:
                     _LOGGER.info(device.latest(CONST.EVENT_MOTION))
                 else:
-                    _LOGGER.warning(
-                        "Could not find device with id: %s", device_id)
+                    _LOGGER.warning("Could not find device with id: %s", device_id)
 
         # Print out avatar image
         if args.avatar_image:
@@ -219,8 +242,7 @@ def call():
                 if device:
                     _LOGGER.info(device.image)
                 else:
-                    _LOGGER.warning(
-                        "Could not find device with id: %s", device_id)
+                    _LOGGER.warning("Could not find device with id: %s", device_id)
 
         # Print out last motion event image
         if args.activity_image:
@@ -230,14 +252,13 @@ def call():
                 if device:
                     _LOGGER.info(device.activity_image)
                 else:
-                    _LOGGER.warning(
-                        "Could not find device with id: %s", device_id)
+                    _LOGGER.warning("Could not find device with id: %s", device_id)
 
     except SkybellException as exc:
         _LOGGER.error(exc)
     # finally:
-        # if skybell:
-        # skybell.logout()
+    # if skybell:
+    # skybell.logout()
 
 
 def main():
@@ -245,5 +266,5 @@ def main():
     call()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

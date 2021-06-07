@@ -1,18 +1,16 @@
 """The device class used by SkybellPy."""
+from distutils.util import strtobool
 import json
 import logging
 
-from distutils.util import strtobool
-
-from skybellpy.exceptions import SkybellException
-import skybellpy.helpers.constants as CONST
-import skybellpy.helpers.errors as ERROR
-import skybellpy.utils as UTILS
+from . import utils as UTILS
+from .exceptions import SkybellException
+from .helpers import constants as CONST, errors as ERROR
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class SkybellDevice():
+class SkybellDevice:
     """Class to represent each Skybell device."""
 
     def __init__(self, device_json, skybell):
@@ -44,46 +42,44 @@ class SkybellDevice():
 
         # Update device setting details
         new_settings_json = self._settings_request()
-        _LOGGER.debug("Device Settings Refresh Response: %s",
-                      new_settings_json)
+        _LOGGER.debug("Device Settings Refresh Response: %s", new_settings_json)
 
         # Update the stored data
-        self.update(new_device_json, new_info_json, new_settings_json,
-                    new_avatar_json)
+        self.update(new_device_json, new_info_json, new_settings_json, new_avatar_json)
 
         # Update the activities
         self._update_activities()
 
     def _device_request(self):
-        url = str.replace(CONST.DEVICE_URL, '$DEVID$', self.device_id)
+        url = str.replace(CONST.DEVICE_URL, "$DEVID$", self.device_id)
         response = self._skybell.send_request(method="get", url=url)
         return json.loads(response.text)
 
     def _avatar_request(self):
-        url = str.replace(CONST.DEVICE_AVATAR_URL, '$DEVID$', self.device_id)
+        url = str.replace(CONST.DEVICE_AVATAR_URL, "$DEVID$", self.device_id)
         response = self._skybell.send_request(method="get", url=url)
         return json.loads(response.text)
 
     def _info_request(self):
-        url = str.replace(CONST.DEVICE_INFO_URL, '$DEVID$', self.device_id)
+        url = str.replace(CONST.DEVICE_INFO_URL, "$DEVID$", self.device_id)
         response = self._skybell.send_request(method="get", url=url)
         return json.loads(response.text)
 
     def _settings_request(self, method="get", json_data=None):
-        url = str.replace(CONST.DEVICE_SETTINGS_URL, '$DEVID$', self.device_id)
-        response = self._skybell.send_request(method=method,
-                                              url=url,
-                                              json_data=json_data)
+        url = str.replace(CONST.DEVICE_SETTINGS_URL, "$DEVID$", self.device_id)
+        response = self._skybell.send_request(
+            method=method, url=url, json_data=json_data
+        )
         return json.loads(response.text)
 
     def _activities_request(self):
-        url = str.replace(CONST.DEVICE_ACTIVITIES_URL,
-                          '$DEVID$', self.device_id)
+        url = str.replace(CONST.DEVICE_ACTIVITIES_URL, "$DEVID$", self.device_id)
         response = self._skybell.send_request(method="get", url=url)
         return json.loads(response.text)
 
-    def update(self, device_json=None, info_json=None, settings_json=None,
-               avatar_json=None):
+    def update(
+        self, device_json=None, info_json=None, settings_json=None, avatar_json=None
+    ):
         """Update the internal device json data."""
         if device_json:
             UTILS.update(self._device_json, device_json)
@@ -124,11 +120,7 @@ class SkybellDevice():
 
             events[event] = activity
 
-        self._skybell.update_dev_cache(
-            self,
-            {
-                CONST.EVENT: events
-            })
+        self._skybell.update_dev_cache(self, {CONST.EVENT: events})
 
     def activities(self, limit=1, event=None):
         """Return device activity information."""
@@ -137,9 +129,8 @@ class SkybellDevice():
         # Filter our activity array if requested
         if event:
             activities = list(
-                filter(
-                    lambda activity:
-                    activity[CONST.EVENT] == event, activities))
+                filter(lambda activity: activity[CONST.EVENT] == event, activities)
+            )
 
         # Return the requested number
         return activities[:limit]
@@ -154,8 +145,7 @@ class SkybellDevice():
 
         latest = None
         for _, evt in events.items():
-            if not latest or \
-                    latest.get(CONST.CREATED_AT) < evt.get(CONST.CREATED_AT):
+            if not latest or latest.get(CONST.CREATED_AT) < evt.get(CONST.CREATED_AT):
                 latest = evt
         return latest
 
@@ -202,8 +192,10 @@ class SkybellDevice():
         """Return lat and lng tuple."""
         location = self._device_json.get(CONST.LOCATION, {})
 
-        return (location.get(CONST.LOCATION_LAT, 0),
-                location.get(CONST.LOCATION_LNG, 0))
+        return (
+            location.get(CONST.LOCATION_LAT, 0),
+            location.get(CONST.LOCATION_LNG, 0),
+        )
 
     @property
     def image(self):
@@ -233,16 +225,24 @@ class SkybellDevice():
     @property
     def do_not_disturb(self):
         """Get if do not disturb is enabled."""
-        return bool(strtobool(str(self._settings_json.get(
-            CONST.SETTINGS_DO_NOT_DISTURB))))
+        return bool(
+            strtobool(str(self._settings_json.get(CONST.SETTINGS_DO_NOT_DISTURB)))
+        )
+
+    @property
+    def do_not_ring(self):
+        """Get if do not ring is enabled."""
+        return bool(strtobool(str(self._settings_json.get(CONST.SETTINGS_DO_NOT_RING))))
 
     @do_not_disturb.setter
     def do_not_disturb(self, enabled):
         """Set do not disturb."""
-        self._set_setting(
-            {
-                CONST.SETTINGS_DO_NOT_DISTURB: str(enabled).lower()
-            })
+        self._set_setting({CONST.SETTINGS_DO_NOT_DISTURB: str(enabled).lower()})
+
+    @do_not_ring.setter
+    def do_not_ring(self, enabled):
+        """Set do not ring."""
+        self._set_setting({CONST.SETTINGS_DO_NOT_RING: str(enabled).lower()})
 
     @property
     def outdoor_chime_level(self):
@@ -263,8 +263,9 @@ class SkybellDevice():
     def motion_sensor(self):
         """Get if the devices motion sensor is enabled."""
         return (
-            self._settings_json.get(CONST.SETTINGS_MOTION_POLICY) ==
-            CONST.SETTINGS_MOTION_POLICY_ON)
+            self._settings_json.get(CONST.SETTINGS_MOTION_POLICY)
+            == CONST.SETTINGS_MOTION_POLICY_ON
+        )
 
     @motion_sensor.setter
     def motion_sensor(self, enabled):
@@ -274,8 +275,9 @@ class SkybellDevice():
         elif enabled is False:
             value = CONST.SETTINGS_MOTION_POLICY_OFF
         else:
-            raise SkybellException(ERROR.INVALID_SETTING_VALUE,
-                                   (CONST.SETTINGS_MOTION_POLICY, enabled))
+            raise SkybellException(
+                ERROR.INVALID_SETTING_VALUE, (CONST.SETTINGS_MOTION_POLICY, enabled)
+            )
 
         self._set_setting({CONST.SETTINGS_MOTION_POLICY: value})
 
@@ -302,23 +304,27 @@ class SkybellDevice():
     @property
     def led_rgb(self):
         """Get devices LED color."""
-        return (int(self._settings_json.get(CONST.SETTINGS_LED_R)),
-                int(self._settings_json.get(CONST.SETTINGS_LED_G)),
-                int(self._settings_json.get(CONST.SETTINGS_LED_B)))
+        return (
+            int(self._settings_json.get(CONST.SETTINGS_LED_R)),
+            int(self._settings_json.get(CONST.SETTINGS_LED_G)),
+            int(self._settings_json.get(CONST.SETTINGS_LED_B)),
+        )
 
     @led_rgb.setter
     def led_rgb(self, color):
         """Set devices LED color."""
-        if (not isinstance(color, (list, tuple)) or
-                not all(isinstance(item, int) for item in color)):
+        if not isinstance(color, (list, tuple)) or not all(
+            isinstance(item, int) for item in color
+        ):
             raise SkybellException(ERROR.COLOR_VALUE_NOT_VALID, color)
 
         self._set_setting(
             {
                 CONST.SETTINGS_LED_R: color[0],
                 CONST.SETTINGS_LED_G: color[1],
-                CONST.SETTINGS_LED_B: color[2]
-            })
+                CONST.SETTINGS_LED_B: color[2],
+            }
+        )
 
     @property
     def led_intensity(self):
@@ -334,9 +340,9 @@ class SkybellDevice():
     def desc(self):
         """Get a short description of the device."""
         # Front Door (id: ) - skybell hd - status: up - wifi status: good
-        return '{0} (id: {1}) - {2} - status: {3} - wifi status: {4}'.format(
-            self.name, self.device_id, self.type,
-            self.status, self.wifi_status)
+        return "{0} (id: {1}) - {2} - status: {3} - wifi status: {4}".format(
+            self.name, self.device_id, self.type, self.status, self.wifi_status
+        )
 
 
 def _validate_setting(setting, value):
@@ -346,40 +352,38 @@ def _validate_setting(setting, value):
 
     if setting == CONST.SETTINGS_DO_NOT_DISTURB:
         if value not in CONST.SETTINGS_DO_NOT_DISTURB_VALUES:
-            raise SkybellException(ERROR.INVALID_SETTING_VALUE,
-                                   (setting, value))
+            raise SkybellException(ERROR.INVALID_SETTING_VALUE, (setting, value))
+
+    if setting == CONST.SETTINGS_DO_NOT_RING:
+        if value not in CONST.SETTINGS_DO_NOT_RING_VALUES:
+            raise SkybellException(ERROR.INVALID_SETTING_VALUE, (setting, value))
 
     if setting == CONST.SETTINGS_OUTDOOR_CHIME:
         if value not in CONST.SETTINGS_OUTDOOR_CHIME_VALUES:
-            raise SkybellException(ERROR.INVALID_SETTING_VALUE,
-                                   (setting, value))
+            raise SkybellException(ERROR.INVALID_SETTING_VALUE, (setting, value))
 
     if setting == CONST.SETTINGS_MOTION_POLICY:
         if value not in CONST.SETTINGS_MOTION_POLICY_VALUES:
-            raise SkybellException(ERROR.INVALID_SETTING_VALUE,
-                                   (setting, value))
+            raise SkybellException(ERROR.INVALID_SETTING_VALUE, (setting, value))
 
     if setting == CONST.SETTINGS_MOTION_THRESHOLD:
         if value not in CONST.SETTINGS_MOTION_THRESHOLD_VALUES:
-            raise SkybellException(ERROR.INVALID_SETTING_VALUE,
-                                   (setting, value))
+            raise SkybellException(ERROR.INVALID_SETTING_VALUE, (setting, value))
 
     if setting == CONST.SETTINGS_VIDEO_PROFILE:
         if value not in CONST.SETTINGS_VIDEO_PROFILE_VALUES:
-            raise SkybellException(ERROR.INVALID_SETTING_VALUE,
-                                   (setting, value))
+            raise SkybellException(ERROR.INVALID_SETTING_VALUE, (setting, value))
 
     if setting in CONST.SETTINGS_LED_COLOR:
-        if (value < CONST.SETTINGS_LED_VALUES[0] or
-                value > CONST.SETTINGS_LED_VALUES[1]):
-            raise SkybellException(ERROR.INVALID_SETTING_VALUE,
-                                   (setting, value))
+        if value < CONST.SETTINGS_LED_VALUES[0] or value > CONST.SETTINGS_LED_VALUES[1]:
+            raise SkybellException(ERROR.INVALID_SETTING_VALUE, (setting, value))
 
     if setting == CONST.SETTINGS_LED_INTENSITY:
         if not isinstance(value, int):
             raise SkybellException(ERROR.COLOR_INTENSITY_NOT_VALID, value)
 
-        if (value < CONST.SETTINGS_LED_INTENSITY_VALUES[0] or
-                value > CONST.SETTINGS_LED_INTENSITY_VALUES[1]):
-            raise SkybellException(ERROR.INVALID_SETTING_VALUE,
-                                   (setting, value))
+        if (
+            value < CONST.SETTINGS_LED_INTENSITY_VALUES[0]
+            or value > CONST.SETTINGS_LED_INTENSITY_VALUES[1]
+        ):
+            raise SkybellException(ERROR.INVALID_SETTING_VALUE, (setting, value))

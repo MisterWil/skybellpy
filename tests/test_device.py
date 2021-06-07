@@ -115,6 +115,8 @@ class TestSkybell(unittest.TestCase):
         # Test Settings Details
         self.assertEqual(device.do_not_disturb,
                          settings_json[CONST.SETTINGS_DO_NOT_DISTURB])
+        self.assertEqual(device.do_not_ring,
+                         settings_json[CONST.SETTINGS_DO_NOT_RING])
         self.assertEqual(device.outdoor_chime_level,
                          settings_json[CONST.SETTINGS_OUTDOOR_CHIME])
         self.assertEqual(device.motion_sensor,
@@ -154,6 +156,7 @@ class TestSkybell(unittest.TestCase):
                                '$DEVID$', DEVICE.DEVID)
 
         do_not_disturb = False
+        do_not_ring = False
         outdoor_chime = CONST.SETTINGS_OUTDOOR_CHIME_HIGH
         motion_policy = CONST.SETTINGS_MOTION_POLICY_ON
         motion_threshold = CONST.SETTINGS_MOTION_THRESHOLD_HIGH
@@ -162,6 +165,7 @@ class TestSkybell(unittest.TestCase):
         led_intensity = 100
         settings_text = DEVICE_SETTINGS.get_response_ok(
             do_not_disturb,
+            do_not_ring,
             outdoor_chime,
             motion_policy,
             motion_threshold,
@@ -192,6 +196,7 @@ class TestSkybell(unittest.TestCase):
         self.assertEqual(device.wifi_status, device_wifi_status)
         self.assertEqual(device.wifi_ssid, device_ssid)
         self.assertEqual(device.do_not_disturb, do_not_disturb)
+        self.assertEqual(device.do_not_ring, do_not_ring)
         self.assertEqual(device.outdoor_chime_level, outdoor_chime)
         self.assertTrue(device.outdoor_chime)
         self.assertEqual(device.motion_sensor, True)
@@ -215,6 +220,7 @@ class TestSkybell(unittest.TestCase):
             ssid=device_ssid, wifi_status=device_wifi_status)
 
         do_not_disturb = True
+        do_not_ring = True
         outdoor_chime = CONST.SETTINGS_OUTDOOR_CHIME_OFF
         motion_policy = CONST.SETTINGS_MOTION_POLICY_OFF
         motion_threshold = CONST.SETTINGS_MOTION_THRESHOLD_LOW
@@ -223,6 +229,7 @@ class TestSkybell(unittest.TestCase):
         led_intensity = 25
         settings_text = DEVICE_SETTINGS.get_response_ok(
             do_not_disturb,
+            do_not_ring,
             outdoor_chime,
             motion_policy,
             motion_threshold,
@@ -246,6 +253,7 @@ class TestSkybell(unittest.TestCase):
         self.assertEqual(device.wifi_status, device_wifi_status)
         self.assertEqual(device.wifi_ssid, device_ssid)
         self.assertEqual(device.do_not_disturb, do_not_disturb)
+        self.assertEqual(device.do_not_ring, do_not_ring)
         self.assertEqual(device.outdoor_chime_level, outdoor_chime)
         self.assertFalse(device.outdoor_chime)
         self.assertEqual(device.motion_sensor, False)
@@ -294,6 +302,10 @@ class TestSkybell(unittest.TestCase):
         for value in CONST.SETTINGS_DO_NOT_DISTURB_VALUES:
             device.do_not_disturb = value
             self.assertEqual(device.do_not_disturb, strtobool(value))
+
+        for value in CONST.SETTINGS_DO_NOT_RING_VALUES:
+            device.do_not_ring = value
+            self.assertEqual(device.do_not_ring, strtobool(value))
 
         for value in CONST.SETTINGS_OUTDOOR_CHIME_VALUES:
             device.outdoor_chime_level = value
@@ -358,6 +370,9 @@ class TestSkybell(unittest.TestCase):
         # Change and test new values
         with self.assertRaises(skybellpy.SkybellException):
             device.do_not_disturb = "monkey"
+
+        with self.assertRaises(skybellpy.SkybellException):
+            device.do_not_ring = "monkey"
 
         with self.assertRaises(skybellpy.SkybellException):
             device.outdoor_chime_level = "bamboo"

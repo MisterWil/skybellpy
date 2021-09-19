@@ -44,7 +44,7 @@ class Skybell():
         self._session = None
         self._cache_path = cache_path
         self._disable_cache = disable_cache
-        self._devices = None
+        self.devices = None
         self._session = requests.session()
         self._user_agent = '{} ({})'.format(CONST.USER_AGENT, agent_identifier)
         self._login_sleep = login_sleep
@@ -125,7 +125,7 @@ class Skybell():
             # if a logout happens without registering the app which
             # we aren't currently doing.
             self._session = requests.session()
-            self._devices = None
+            self.devices = None
 
             self.update_cache({CONST.ACCESS_TOKEN: None})
 
@@ -133,9 +133,9 @@ class Skybell():
 
     def get_devices(self, refresh=False):
         """Get all devices from Abode."""
-        if refresh or self._devices is None:
-            if self._devices is None:
-                self._devices = {}
+        if refresh or self.devices is None:
+            if self.devices is None:
+                self.devices = {}
 
             _LOGGER.info("Updating all devices...")
             response = self.send_request("get", CONST.DEVICES_URL)
@@ -145,24 +145,24 @@ class Skybell():
 
             for device_json in response_object:
                 # Attempt to reuse an existing device
-                device = self._devices.get(device_json['id'])
+                device = self.devices.get(device_json["id"])
 
                 # No existing device, create a new one
                 if device:
                     device.update(device_json)
                 else:
                     device = SkybellDevice(device_json, self)
-                    self._devices[device.device_id] = device
+                    self.devices[device.device_id] = device
 
-        return list(self._devices.values())
+        return list(self.devices.values())
 
     def get_device(self, device_id, refresh=False):
         """Get a single device."""
-        if self._devices is None:
+        if self.devices is None:
             self.get_devices()
             refresh = False
 
-        device = self._devices.get(device_id)
+        device = self.devices.get(device_id)
 
         if device and refresh:
             device.refresh()

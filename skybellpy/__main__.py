@@ -174,7 +174,7 @@ def call():
             if device:
                 # pylint: disable=protected-access
                 _LOGGER.info(device_id + " JSON:\n" +
-                             json.dumps(device._device_json, sort_keys=True,
+                             json.dumps(device.device_json, sort_keys=True,
                                         indent=4, separators=(',', ': ')))
             else:
                 _LOGGER.warning("Could not find device with id: %s", device_id)

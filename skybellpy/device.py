@@ -17,7 +17,7 @@ class SkybellDevice():
 
     def __init__(self, device_json, skybell):
         """Set up Skybell device."""
-        self._device_json = device_json
+        self.device_json = device_json
         self._device_id = device_json.get(CONST.ID)
         self._type = device_json.get(CONST.TYPE)
         self._skybell = skybell
@@ -86,7 +86,7 @@ class SkybellDevice():
                avatar_json=None):
         """Update the internal device json data."""
         if device_json:
-            UTILS.update(self._device_json, device_json)
+            UTILS.update(self.device_json, device_json)
 
         if avatar_json:
             UTILS.update(self._avatar_json, avatar_json)
@@ -175,7 +175,7 @@ class SkybellDevice():
     @property
     def name(self):
         """Get the name of this device."""
-        return self._device_json.get(CONST.NAME)
+        return self.device_json.get(CONST.NAME)
 
     @property
     def type(self):
@@ -190,7 +190,7 @@ class SkybellDevice():
     @property
     def status(self):
         """Get the generic status of a device (up/down)."""
-        return self._device_json.get(CONST.STATUS)
+        return self.device_json.get(CONST.STATUS)
 
     @property
     def is_up(self):
@@ -200,7 +200,7 @@ class SkybellDevice():
     @property
     def location(self):
         """Return lat and lng tuple."""
-        location = self._device_json.get(CONST.LOCATION, {})
+        location = self.device_json.get(CONST.LOCATION, {})
 
         return (location.get(CONST.LOCATION_LAT, 0),
                 location.get(CONST.LOCATION_LNG, 0))
